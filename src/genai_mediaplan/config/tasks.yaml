@@ -1,0 +1,260 @@
+definition_task:
+  description: >
+    Craft a compelling and precise 3-line cohort definition for '{cohort_name}'.
+    The definition must be suitable for a client-facing marketing presentation.
+    Summarize the cohort's core identity, highlight the key behaviors and data signals that define them, and emphasize their value as a target audience.
+    Use persuasive, data-driven, and professional language. Avoid generic statements and repetition.
+    Output only the JSON object, with no extra text or commentary.
+    Before submitting, ensure:
+      1) The definition is exactly 3 lines,
+      2) All key metrics and segments are referenced,
+      3) The tone is professional and client-facing,
+      4) The output is a valid JSON object as per the example,
+      5) No extra text is included.
+  expected_output: >
+    A 3-line description introducing the cohort, referencing all key metrics and segments.
+    The output should be a json object in the following format:
+    {
+      "cohort_definition": "A 3-line description introducing the cohort, referencing all key metrics and segments."
+    }
+    example:
+      {
+        "cohort_definition": "People interested in education related news or have education related apps on their devices and searching for the education loan. This cohort represents users with proven educational intent, identified through comprehensive analysis of education content consumption, learning app usage, college research, and academic service engagement across Times Internet properties."
+      }
+  agent: definition_agent
+
+data_signals_task:
+  description: >
+    Based on the provided '{audience_data}' for the cohort '{cohort_name}', identify and create 3 distinct categories of actionable data signals.
+    Each category must cover a different user dimension (e.g., content consumption, app interactions, declared/inferred intent).
+    For each category, provide a descriptive title (max 40 chars, with emoji) and a list of 5 specific, high-value, actionable data points (max 60 chars each).
+    Each data signal must be actionable and specific, not generic. Use a professional, client-facing tone.
+    Output only the JSON array, with no extra text or commentary.
+    Before submitting, ensure:
+      1) There are 3 categories, each with a unique title and 5 signals,
+      2) Titles include an emoji and are under 40 characters,
+      3) Each data signal is under 60 characters and actionable,
+      4) The output is a valid JSON array as per the example,
+      5) No extra text is included.
+  expected_output: >
+    A json object in the following format:
+    {
+    "data_signals": [
+        {
+          "title": "Data Signal Title",
+          "data_signals": ["Data Signal A", "Data Signal B", "Data Signal C", "Data Signal D", "Data Signal E"]
+        },
+        {
+          "title": "Data Signal Title2",
+          "data_signals": ["Data Signal F", "Data Signal G", "Data Signal H", "Data Signal I", "Data Signal J"]
+        },
+        {
+          "title": "Data Signal Title3",
+          "data_signals": ["Data Signal K", "Data Signal L", "Data Signal M", "Data Signal N", "Data Signal O"]
+        }
+      ]
+    }
+    example:
+      {
+      "data_signals": [
+        {
+          "title": "🎯 Student Intent & Targeting",
+          "data_signals": ["Visa readiness indicators and documentation patterns", "Study destination preference analysis", "Education loan and test prep interest signals", "Geographic segmentation for study abroad planning", "Interest-based retargeting through academic searches"]
+        },
+        {
+          "title": "📚 Academic App Users & Personas",
+          "data_signals": ["Usage patterns of learning and educational apps", "Behavioral clustering into distinct student personas", "Time spent and engagement depth on education platforms", "Persona segments(Ambitious Achiever, Visa Seeker)", "Cross-platform learning behavior analysis"]
+        },
+        {
+          "title": "🎓 Education Content Research",
+          "data_signals": ["Consumption of study abroad and career articles", "TOI/ET category-specific reading patterns", "Career planning and university research trends", "Regional vs International education interest", "Academic achievement and success story engagement"]
+        }
+      ]
+    }
+  agent: data_signals_agent
+
+persona_task:
+  description: >
+    From the '{audience_data}' for '{cohort_name}', create 6 distinct, mutually exclusive audience personas.
+    Each persona should represent a key behavioral segment within the cohort. Give each persona a memorable, descriptive title (max 35 chars, with emoji).
+    The description (max 85 chars) should concisely capture their core motivation and media habits, making it clear how they can be targeted. Ensure the personas are differentiated based on their primary interests, engagement levels, or intent signals.
+    Descriptions must be actionable for marketers. Use a professional, client-facing tone.
+    Output only the JSON array, with no extra text or commentary.
+    Before submitting, ensure:
+      1) There are 6 personas, each with a unique title (with emoji),
+      2) Each description is under 85 characters and actionable,
+      3) Each persona includes a segment count,
+      4) The output is a valid JSON array as per the example,
+      5) No extra text is included.
+  expected_output: >
+    The output should be a json object in the following format:
+    {
+      "personas": [
+        {
+      "title": "Persona Title",
+      "description": "Persona Description",
+      "segments": nof of segments in the persona
+      }]
+    }
+    example:
+      {
+      "personas": [
+        {
+          "title": "📝 Education & Training Enthusiasts",
+          "description": "Users reading about education, training, admissions, and exams with education apps",
+          "segments": 8
+        },
+        {
+          "title": "📚 Academic App Users",
+          "description": "Students using educational apps like BYJU's, Khan Academy, and exam preparation tools",
+          "segments": 12
+        },
+        {
+          "title": "🌐 Education Site Visitors",
+          "description": "Students using educational apps like BYJU's, Khan Academy, and exam preparation tools",
+          "segments": 12
+        },
+        {
+          "title": "🎓 Young Academic Minds",
+          "description": "Youth segment with recent activity in educational content and career planning",
+          "segments": 8
+        },
+        {
+          "title": "🏆 Graduate Demographics",
+          "description": "12th grade students, graduates, and diploma holders seeking career advancement",
+          "segments": 8
+        },
+        {
+          "title": "🌍 Study Abroad Aspirants",
+          "description": "Students interested in pursuing international education opportunities",
+          "segments": 1
+        }
+      ]
+    }
+  agent: persona_agent
+
+insight_task:
+  description: >
+    Analyze the '{audience_data}' for '{cohort_name}' to uncover 4 strategic, data-backed insights.
+    Each insight must go beyond a simple data point; it should reveal an opportunity or a key user behavior that a marketer can leverage.
+    Frame each insight with a punchy title (max 23 chars, with emoji) and a description (max 235 chars) that clearly states the finding AND its strategic implication for a media campaign.
+    Each insight must reveal a strategic opportunity, not just a data point. Use a professional, client-facing tone.
+    Output only the JSON array, with no extra text or commentary.
+    Before submitting, ensure:
+      1) There are 4 insights, each with a unique title (with emoji),
+      2) Each description is under 235 characters and actionable,
+      3) The output is a valid JSON array as per the example,
+      4) No extra text is included.
+  expected_output: >
+    A json object in the following format:
+    {
+      "insights": [
+        {
+          "title": "Insight Title",
+          "description": "Insight Description"
+        }
+      ]
+    }
+    There should be only 2 keys: title and description in each object of the list.
+    example:
+      {
+      "insights": [
+        {
+          "title": "🎯 Prime Demographics",
+          "description": "77% of audience under 35 represents peak education and career development phase, ensuring high engagement with learning and growth-focused brands."
+        },
+        {
+          "title": "📈 Verified Intent",
+          "description": "Multi-signal targeting through app usage, content consumption, and search behavior provides 3x higher intent verification than traditional demographics alone."
+        },
+        {
+          "title": "🏆 Premium Scale",
+          "description": "54.91M unique users with 164.73M monthly impressions delivers unmatched scale for education-focused campaigns in India's digital landscape."
+        }
+      ]
+    }
+  agent: insight_agent
+
+recommendation_task:
+  description: >
+    Based on the cohort insights and performance indicators, write 4 tactical media strategy recommendations for targeting the cohort {cohort_name}. The audience segments data {audience_data} will be useful to generate the recommendations. Each recommendation must be tactical, actionable, and directly reference cohort data. The title should have maximum 100 characters. The description should be a 1-2 line description of the recommendation with maximum 245 characters. Avoid generic advice; tie each recommendation to a specific metric, persona, or insight. Use a professional, client-facing tone. Output only the JSON array, with no extra text or commentary. Before submitting, ensure: 1) There are 4 recommendations, each with a unique title, 2) Each description is under 245 characters and actionable, 3) The output is a valid JSON array as per the example, 4) No extra text is included.
+  expected_output: >
+    A bullet list of 4 actionable media planning suggestions, referencing all available metrics and segments.
+    The output should be a json object in the following format:
+    {
+      "recommendations": [
+      "title": "Recommendation Title",
+      "description": "Recommendation Description"
+        }
+      ]
+    }
+    There should be only 2 keys: title and description in each object of the list.
+    example:
+      {
+      "recommendations": [
+        { 
+        "title": "🎯 Launch with All Cluster Strategy",
+        "description": "Maximize reach with comprehensive TIL network approach for 54.91M users and 164.73M impressions. Ideal for large-scale education campaigns requiring maximum visibility across all demographics."
+      },
+      {
+        "title": "Target Maharashtra & Karnataka for Premium ROI",
+        "description": "Focus initial campaigns on Maharashtra (8.29M reach) and Karnataka (5.92M reach) where education spending power and tech-savvy student population drive highest conversion rates."
+      },
+      {
+        "title": "Leverage Multi-Persona Messaging",
+        "description": "Create targeted creative variants for top 3 personas: Education & Training Enthusiasts (8 segments), Academic App Users (12 segments), and Young Academic Minds (4 segments) for maximum relevance."
+      },
+      {
+        "title": "Implement Intent-Based Campaign Optimization",
+        "description": "Use our unique education app behavior and content consumption signals to optimize campaign delivery in real-time, ensuring ads reach users during peak learning and decision-making moments."
+      }
+      ]
+    }
+  agent: recommendation_agent
+
+formatting_task:
+  description: >
+    Your task is to assemble the outputs from all previous agents into a single, clean JSON object.
+    Before finalizing, perform a quality check: ensure all text adheres to the specified character limits and that the tone is consistent and professional throughout.
+    Verify that the personas, insights, and recommendations are logically connected and directly relevant to the '{cohort_name}' and its definition.
+    Double-check that all nested objects/arrays match the required format and that all text is within limits. Output only the final JSON object, with no extra text or commentary. The final JSON must be perfectly structured according to the provided format, ready for automated processing.
+    Before submitting, ensure:
+      1) All keys are present and correctly named,
+      2) All text is within specified limits,
+      3) The tone is consistent and professional,
+      4) The output is a valid JSON object as per the example,
+      5) No extra text is included.
+  expected_output: >
+    A well-structured JSON output ready for programmatic insertion into Google Slides.
+    The output should be a json object in the following format:
+    {
+      "cohort_definition": "A 3-line description introducing the cohort, referencing all key metrics and segments.",
+      "data_signals": [
+        {
+          "title": "Data Signal Title",
+          "data_signals": ["Data Signal A", "Data Signal B", "Data Signal C", "Data Signal D", "Data Signal E"]
+        }
+      ],
+      "personas": [
+        {
+          "title": "Persona Title",
+          "description": "Persona Description",
+          "segments": nof of segments in the persona
+        }
+      ],
+      "insights": [
+        {
+          "title": "Insight Title",
+          "description": "Insight Description"
+        }
+      ],
+      "recommendations": [
+        {
+          "title": "Recommendation Title",
+          "description": "Recommendation Description"
+        }
+      ]
+    }
+  agent: formatter_agent
+
+
