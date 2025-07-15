@@ -94,6 +94,7 @@ def get_content_to_replace_in_slides(cohort_name, llm_response_json, audience_fo
         "insight_2_description": llm_response_json["insights"][1]["description"],
         "insight_3_title": llm_response_json["insights"][2]["title"],
         "insight_3_description": llm_response_json["insights"][2]["description"],
+        "competitive_advantage": llm_response_json["market_edge"],
         
         "recommendation_title_1": llm_response_json["recommendations"][0]["title"],
         "recommendation_description_1": llm_response_json["recommendations"][0]["description"],

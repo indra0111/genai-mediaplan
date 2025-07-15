@@ -81,7 +81,7 @@ persona_task:
     Descriptions must be actionable for marketers. Use a professional, client-facing tone.
     Output only the JSON array, with no extra text or commentary.
     Before submitting, ensure:
-      1) There are 6 personas, each with a unique title (with emoji),
+      1) There are strictly 6 personas, each with a unique title (with emoji),
       2) Each description is under 85 characters and actionable,
       3) Each persona includes a segment count,
       4) The output is a valid JSON array as per the example,
@@ -175,6 +175,22 @@ insight_task:
     }
   agent: insight_agent
 
+market_edge_synthesizer_task:
+  description: >
+    Synthesize the insights, personas, and recommendations into a single, coherent market edge for the cohort {cohort_name}. The audience segments data {audience_data} will be useful to generate the market edge.
+    The market edge should be a single, coherent statement that captures the essence of the cohort and its potential for a media campaign.
+    Use a professional, client-facing tone. Output only the required JSON object, with no extra text or commentary.
+  expected_output: >
+    A json object in the following format:
+    {
+      "market_edge": "Market Edge Description"
+    }
+    example:
+      {
+        "market_edge": "Our College Students cohort combines Times of India's mass English reach with Economic Times' premium business audience, creating India's most comprehensive education-intent targeting solution across 32 distinct segments with verified behavioral signals."
+      }
+  agent: market_edge_synthesizer_agent
+
 recommendation_task:
   description: >
     Based on the cohort insights and performance indicators, write 4 tactical media strategy recommendations for targeting the cohort {cohort_name}. The audience segments data {audience_data} will be useful to generate the recommendations. Each recommendation must be tactical, actionable, and directly reference cohort data. The title should have maximum 100 characters. The description should be a 1-2 line description of the recommendation with maximum 245 characters. Avoid generic advice; tie each recommendation to a specific metric, persona, or insight. Use a professional, client-facing tone. Output only the JSON array, with no extra text or commentary. Before submitting, ensure: 1) There are 4 recommendations, each with a unique title, 2) Each description is under 245 characters and actionable, 3) The output is a valid JSON array as per the example, 4) No extra text is included.
@@ -248,6 +264,7 @@ formatting_task:
           "description": "Insight Description"
         }
       ],
+      "market_edge": "Market Edge Description",
       "recommendations": [
         {
           "title": "Recommendation Title",

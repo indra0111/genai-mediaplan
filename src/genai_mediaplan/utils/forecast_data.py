@@ -1,10 +1,10 @@
 import mysql.connector
 import json
 import requests
-
+import os
 def get_audience_data(abvr):
     final_data = {}
-    url="http://172.29.83.21:8081/getAudienceInfo"
+    url=f"{os.getenv('AUDIENCE_INFO_URL')}/getAudienceInfo"
     try:
         response = requests.post(url, data=abvr)
         data = response.json()
@@ -30,11 +30,11 @@ def process_forecast_data(data):
     
 def export_table_as_json(cohort_id):
     connection = mysql.connector.connect(
-        user='Prd43eo32RUsr',
-        password='8NcDnhrfp7',
-        host='127.0.0.1',
-        port='3307',
-        database='til_expresso_db'
+        user=os.getenv('DB_USER'),
+        password=os.getenv('DB_PASSWORD'),
+        host=os.getenv('DB_HOST'),
+        port=os.getenv('DB_PORT'),
+        database=os.getenv('DB_NAME')
     )
 
     try:

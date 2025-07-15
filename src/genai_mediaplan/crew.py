@@ -48,6 +48,13 @@ class GenaiMediaplan():
         )
 
     @agent
+    def market_edge_synthesizer_agent(self) -> Agent:
+        return Agent(
+            config=self.agents_config['market_edge_synthesizer_agent'], # type: ignore[index]
+            verbose=True
+        )
+        
+    @agent
     def recommendation_agent(self) -> Agent:
         return Agent(
             config=self.agents_config['recommendation_agent'], # type: ignore[index]
@@ -88,6 +95,13 @@ class GenaiMediaplan():
     def insight_task(self) -> Task:
         return Task(
             config=self.tasks_config['insight_task'], # type: ignore[index]
+            # output_file='report.md'
+        )
+        
+    @task
+    def market_edge_synthesizer_task(self) -> Task:
+        return Task(
+            config=self.tasks_config['market_edge_synthesizer_task'], # type: ignore[index]
             # output_file='report.md'
         )
 
