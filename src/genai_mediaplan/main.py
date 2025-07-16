@@ -6,7 +6,7 @@ from datetime import datetime
 
 from genai_mediaplan.crew import GenaiMediaplan
 from genai_mediaplan.utils.forecast_data import export_table_as_json
-from genai_mediaplan.utils.helper import extract_json_from_markdown
+from genai_mediaplan.utils.helper import extract_json_from_markdown_or_json
 from genai_mediaplan.utils.update_google_slides_content import get_copy_of_presentation
 from dotenv import load_dotenv
 
@@ -33,7 +33,7 @@ def run():
     }
     try:
         GenaiMediaplan().crew().kickoff(inputs=inputs)
-        model_output_json = extract_json_from_markdown("final_report.md")
+        model_output_json = extract_json_from_markdown_or_json("final_report.md")
         get_copy_of_presentation(cohort_name, model_output_json, forecast_data)
     except Exception as e:
         raise Exception(f"An error occurred while running the crew: {e}")
