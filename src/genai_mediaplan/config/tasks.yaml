@@ -178,7 +178,7 @@ insight_task:
 market_edge_synthesizer_task:
   description: >
     Synthesize the insights, personas, and recommendations into a single, coherent market edge for the cohort {cohort_name}. The audience segments data {audience_data} will be useful to generate the market edge.
-    The market edge should be a single, coherent statement that captures the essence of the cohort and its potential for a media campaign.
+    The market edge should be a single, coherent statement that captures the essence of the cohort and its potential for a media campaign. Make sure the number of characters in the market edge is less than 370.
     Use a professional, client-facing tone. Output only the required JSON object, with no extra text or commentary.
   expected_output: >
     A json object in the following format:

@@ -6,6 +6,7 @@ import os
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from genai_mediaplan.utils.update_charts import update_charts_in_slides
 
 # Set up credentials
 # SERVICE_ACCOUNT_FILE = 'service_account.json'
@@ -13,6 +14,7 @@ SCOPES = ['https://www.googleapis.com/auth/drive']
 CLIENT_SECRET_FILE = 'client_secret_drive.json'
 TOKEN_FILE = 'token.json'
 SOURCE_FILE_ID = '1ruQjp-BGuOYrhvZYoh5_L7OntTjmtQYj6renzsL7aOg'
+SOURCE_SHEET_ID = '1zGHhqOw3fsSHqPs4zD1RsFk1H0MTpd5Et65LkK2DZq0'
 SHARED_FOLDER_ID = '15Uu1qL-uFFMANn7b2rLlVq7HZG7ytJuH'
 
 creds = None
@@ -32,11 +34,35 @@ drive_service = build('drive', 'v3', credentials=creds)
 slides_service = build('slides', 'v1', credentials=creds)
 
 def get_content_to_replace_in_slides(cohort_name, llm_response_json, audience_forecast):
+    def safe_get(lst, index, default=" "):
+        try:
+            return lst[index]
+        except (IndexError, TypeError):
+            return default
+
+    def safe_get_data_signals(lst, outer_idx, inner_idx, default=" "):
+        try:
+            return lst[outer_idx]["data_signals"][inner_idx]
+        except (IndexError, KeyError, TypeError):
+            return default
+
+    def safe_get_title(lst, idx):
+        return safe_get(lst, idx, {}).get("title", " ")
+
+    def safe_get_desc(lst, idx):
+        return safe_get(lst, idx, {}).get("description", " ")
+
+    def safe_get_segments(lst, idx):
+        no_of_segments = safe_get(lst, idx, {}).get('segments', '')
+        if no_of_segments:
+            return f"{no_of_segments} Segments"
+        else:
+            return " "
     data={
         "cohort_title": cohort_name,
         "cohort_updated_date": f"Audience Media Plan Forecast & Insights for {datetime.now().strftime('%B')} {datetime.now().strftime('%Y')}",
         "cohort_definition_title": f"{cohort_name} Cohort Definition",
-        "cohort_definition": llm_response_json["cohort_definition"],
+        "cohort_definition": llm_response_json.get("cohort_definition", " "),
         "reach_cluster": round(audience_forecast["TIL_All_Cluster_RNF"]["India"]["user"],2),
         "impressions_cluster": round(min(audience_forecast["TIL_All_Cluster_RNF"]["India"]["user"] * 3, audience_forecast["TIL_All_Cluster_RNF"]["India"]["impr"]),2),
         "reach_languages": round(audience_forecast["TIL_All_Languages_RNF"]["India"]["user"],2),
@@ -49,62 +75,36 @@ def get_content_to_replace_in_slides(cohort_name, llm_response_json, audience_fo
         "impressions_et": round(min(audience_forecast["TIL_ET_Only_RNF"]["India"]["user"] * 3, audience_forecast["TIL_ET_Only_RNF"]["India"]["impr"]),2),
         "reach_nbt": round(audience_forecast["TIL_NBT_Only_RNF"]["India"]["user"],2),
         "impressions_nbt": round(min(audience_forecast["TIL_NBT_Only_RNF"]["India"]["user"] * 3, audience_forecast["TIL_NBT_Only_RNF"]["India"]["impr"]),2),
-        
-        "data_signal_1_title": llm_response_json["data_signals"][0]["title"],
-        "data_signal_1_1": llm_response_json["data_signals"][0]["data_signals"][0],
-        "data_signal_1_2": llm_response_json["data_signals"][0]["data_signals"][1],
-        "data_signal_1_3": llm_response_json["data_signals"][0]["data_signals"][2],
-        "data_signal_1_4": llm_response_json["data_signals"][0]["data_signals"][3],
-        "data_signal_1_5": llm_response_json["data_signals"][0]["data_signals"][4],
-        "data_signal_2_title": llm_response_json["data_signals"][1]["title"],
-        "data_signal_2_1": llm_response_json["data_signals"][1]["data_signals"][0],
-        "data_signal_2_2": llm_response_json["data_signals"][1]["data_signals"][1],
-        "data_signal_2_3": llm_response_json["data_signals"][1]["data_signals"][2],
-        "data_signal_2_4": llm_response_json["data_signals"][1]["data_signals"][3],
-        "data_signal_2_5": llm_response_json["data_signals"][1]["data_signals"][4],
-        "data_signal_3_title": llm_response_json["data_signals"][2]["title"],
-        "data_signal_3_1": llm_response_json["data_signals"][2]["data_signals"][0],
-        "data_signal_3_2": llm_response_json["data_signals"][2]["data_signals"][1],
-        "data_signal_3_3": llm_response_json["data_signals"][2]["data_signals"][2],
-        "data_signal_3_4": llm_response_json["data_signals"][2]["data_signals"][3],
-        "data_signal_3_5": llm_response_json["data_signals"][2]["data_signals"][4],
-        
-        "persona_1_title": llm_response_json["personas"][0]["title"],
-        "persona_1_description": llm_response_json["personas"][0]["description"],
-        "persona_1_segments": f"{llm_response_json['personas'][0]['segments']} Segments",
-        "persona_2_title": llm_response_json["personas"][1]["title"],
-        "persona_2_description": llm_response_json["personas"][1]["description"],
-        "persona_2_segments": f"{llm_response_json['personas'][1]['segments']} Segments",
-        "persona_3_title": llm_response_json["personas"][2]["title"],
-        "persona_3_description": llm_response_json["personas"][2]["description"],
-        "persona_3_segments": f"{llm_response_json['personas'][2]['segments']} Segments",
-        "persona_4_title": llm_response_json["personas"][3]["title"],
-        "persona_4_description": llm_response_json["personas"][3]["description"],
-        "persona_4_segments": f"{llm_response_json['personas'][3]['segments']} Segments",
-        "persona_5_title": llm_response_json["personas"][4]["title"],
-        "persona_5_description": llm_response_json["personas"][4]["description"],
-        "persona_5_segments": f"{llm_response_json['personas'][4]['segments']} Segments",
-        "persona_6_title": llm_response_json["personas"][5]["title"],
-        "persona_6_description": llm_response_json["personas"][5]["description"],
-        "persona_6_segments": f"{llm_response_json['personas'][5]['segments']} Segments",
-        
-        "insight_1_title": llm_response_json["insights"][0]["title"],
-        "insight_1_description": llm_response_json["insights"][0]["description"],
-        "insight_2_title": llm_response_json["insights"][1]["title"],
-        "insight_2_description": llm_response_json["insights"][1]["description"],
-        "insight_3_title": llm_response_json["insights"][2]["title"],
-        "insight_3_description": llm_response_json["insights"][2]["description"],
-        "competitive_advantage": llm_response_json["market_edge"],
-        
-        "recommendation_title_1": llm_response_json["recommendations"][0]["title"],
-        "recommendation_description_1": llm_response_json["recommendations"][0]["description"],
-        "recommendation_title_2": llm_response_json["recommendations"][1]["title"],
-        "recommendation_description_2": llm_response_json["recommendations"][1]["description"],
-        "recommendation_title_3": llm_response_json["recommendations"][2]["title"],
-        "recommendation_description_3": llm_response_json["recommendations"][2]["description"],
-        "recommendation_title_4": llm_response_json["recommendations"][3]["title"],
-        "recommendation_description_4": llm_response_json["recommendations"][3]["description"]
+        "competitive_advantage": llm_response_json.get("market_edge", " "),
     }
+    
+    # Add data signals (3 titles, each with 5 signals)
+    for i in range(3):
+        data[f"data_signal_{i+1}_title"] = safe_get_title(llm_response_json.get("data_signals", []), i)
+        for j in range(5):
+            key = f"data_signal_{i+1}_{j+1}"
+            val = safe_get_data_signals(llm_response_json.get("data_signals", []), i, j)
+            data[key] = val
+
+    # Add personas (up to 6)
+    for i in range(6):
+        data[f"persona_{i+1}_title"] = safe_get_title(llm_response_json.get("personas", []), i)
+        data[f"persona_{i+1}_description"] = safe_get_desc(llm_response_json.get("personas", []), i)
+        data[f"persona_{i+1}_segments"] = safe_get_segments(llm_response_json.get("personas", []), i)
+
+    # Add insights (up to 3)
+    for i in range(3):
+        data[f"insight_{i+1}_title"] = safe_get_title(llm_response_json.get("insights", []), i)
+        data[f"insight_{i+1}_description"] = safe_get_desc(llm_response_json.get("insights", []), i)
+
+    # Competitive advantage
+    data["competitive_advantage"] = llm_response_json.get("market_edge", " ")
+
+    # Add recommendations (up to 4)
+    for i in range(4):
+        data[f"recommendation_title_{i+1}"] = safe_get_title(llm_response_json.get("recommendations", []), i)
+        data[f"recommendation_description_{i+1}"] = safe_get_desc(llm_response_json.get("recommendations", []), i)
+
     return data
 
 def update_slides_content(copied_file_id, data):
@@ -286,10 +286,6 @@ def get_update_requests_for_numerical_data_in_slides(presentation_id, audience_f
     }
     for preset in ["TIL_All_Cluster_RNF", "TIL_All_Languages_RNF", "TIL_TOI_Only_RNF", "TIL_ET_Only_RNF", "TIL_ET_And_TOI_RNF", "TIL_NBT_Only_RNF"]:
         city_group_data, state_data, city_data, country_data = get_tabular_data_for_preset(preset, audience_forecast)
-        print(f"For {preset} city_group_data: {city_group_data}")
-        print(f"For {preset} state_data: {state_data}")
-        print(f"For {preset} city_data: {city_data}")
-        print(f"For {preset} country_data: {country_data}")
         city_group_requests = update_requests_for_tablular_data_in_slides(presentation_id, city_group_data, f"{preset_alt_mapping[preset]}_tier")
         state_requests = update_requests_for_tablular_data_in_slides(presentation_id, state_data, f"{preset_alt_mapping[preset]}_state")
         city_requests = update_requests_for_tablular_data_in_slides(presentation_id, city_data, f"{preset_alt_mapping[preset]}_city")
@@ -305,12 +301,20 @@ def get_copy_of_presentation(cohort_name, llm_response_json, audience_forecast):
             'parents': [SHARED_FOLDER_ID]
         }
     ).execute()
+    sheet_copy = drive_service.files().copy(
+        fileId=SOURCE_SHEET_ID,
+        body={
+            'name': f'Charts_{"".join(cohort_name.split(" "))}_{datetime.now().strftime("%B%Y")}',
+            'parents': [SHARED_FOLDER_ID]
+        }
+    ).execute()
     print(f"Copy created: https://drive.google.com/file/d/{copied_file['id']}")
     copied_file_id = copied_file['id']
+    copied_sheet_id = sheet_copy['id']
     data = get_content_to_replace_in_slides(cohort_name, llm_response_json, audience_forecast)
     update_requests = update_slides_content(copied_file_id, data)
     update_requests_numerical = get_update_requests_for_numerical_data_in_slides(copied_file_id, audience_forecast)
-    print(f"update_requests_numerical: {update_requests_numerical}")
+    update_charts_in_slides(copied_file_id, copied_sheet_id, 4, None)
     final_requests = update_requests + update_requests_numerical
     if final_requests:
         slides_service.presentations().batchUpdate(
@@ -322,18 +326,3 @@ def get_copy_of_presentation(cohort_name, llm_response_json, audience_forecast):
         print("ℹ️ No matching alt_text found.")
     return f"https://drive.google.com/file/d/{copied_file_id}"
     
-# def main():
-#     cohort_name = "College Students"
-#     # Make a copy into that folder
-
-#     # copied_file_id = '1NcRHEWP8k0aDSkDqhs54XQ4w0O2KCJNoxEckOSR8T8g'
-#     with open("llm_response.json", "r") as f:
-#         llm_response_json = json.load(f)
-#     print(f"llm_response_json: {llm_response_json}")
-#     with open("cohort_result_table.json", "r") as f:
-#         audience_forecast = json.load(f)["results"]
-#     print(f"audience_forecast: {audience_forecast}")
-#     get_copy_of_presentation(cohort_name, llm_response_json, audience_forecast)
-
-# if __name__ == "__main__":
-#     main()

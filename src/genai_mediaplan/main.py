@@ -23,11 +23,10 @@ def run():
     """
     load_dotenv(override=True)
     
-    cohort_name = "Study Abroad"
+    cohort_name = "Shopping"
     data = export_table_as_json(cohort_name)
     audience_data = data['abvr']
     forecast_data = data['results']
-    print(f"data: {data}")
     inputs = {
         'cohort_name': cohort_name,
         'audience_data': audience_data
@@ -35,7 +34,6 @@ def run():
     try:
         GenaiMediaplan().crew().kickoff(inputs=inputs)
         model_output_json = extract_json_from_markdown("final_report.md")
-        print(f"model_output_json: {model_output_json}")
         get_copy_of_presentation(cohort_name, model_output_json, forecast_data)
     except Exception as e:
         raise Exception(f"An error occurred while running the crew: {e}")
