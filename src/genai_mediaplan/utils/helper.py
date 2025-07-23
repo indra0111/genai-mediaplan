@@ -31,3 +31,11 @@ def extract_json_from_markdown_or_json(final_report_path):
         print("❌ JSON decode error:", e)
         print("⚠️ Offending JSON string (truncated):", json_str[:300])
         return None
+
+def find_object_id_by_alt_description(slides, alt_title):
+    for slide in slides:
+        for element in slide.get('pageElements', []):
+            title = element.get('description')
+            if title == alt_title:
+                return element['objectId']
+    return None

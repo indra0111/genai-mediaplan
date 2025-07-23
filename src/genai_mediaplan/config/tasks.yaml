@@ -6,7 +6,7 @@ definition_task:
     Use persuasive, data-driven, and professional language. Avoid generic statements and repetition.
     Output only the JSON object, with no extra text or commentary.
     Before submitting, ensure:
-      1) The definition is exactly 3 lines,
+      1) The definition is exactly 3 lines and maximum 450 characters,
       2) All key metrics and segments are referenced,
       3) The tone is professional and client-facing,
       4) The output is a valid JSON object as per the example,
@@ -75,17 +75,18 @@ data_signals_task:
 
 persona_task:
   description: >
-    From the '{audience_data}' for '{cohort_name}', create 6 distinct, mutually exclusive audience personas.
-    Each persona should represent a key behavioral segment within the cohort. Give each persona a memorable, descriptive title (max 35 chars, with emoji).
-    The description (max 85 chars) should concisely capture their core motivation and media habits, making it clear how they can be targeted. Ensure the personas are differentiated based on their primary interests, engagement levels, or intent signals.
-    Descriptions must be actionable for marketers. Use a professional, client-facing tone.
-    Output only the JSON array, with no extra text or commentary.
-    Before submitting, ensure:
-      1) There are strictly 6 personas, each with a unique title (with emoji),
-      2) Each description is under 85 characters and actionable,
-      3) Each persona includes a segment count,
-      4) The output is a valid JSON array as per the example,
-      5) No extra text is included.
+
+    Based on the provided '{audience_data}' for '{cohort_name}', your task is to generate a detailed persona analysis.
+    The output must be a single JSON object with a root key named "personas". This key will contain an array of exactly 6 highly differentiated audience persona objects.
+
+    For each of the 6 persona objects in the array, you must include:
+    1.  'title': A memorable, descriptive title (max 35 chars). The title should start with an emoji and there should be no more than one emoji.
+    2.  'description': An actionable description of the persona's core motivation and media habits (max 85 chars).
+    3.  'segments': An integer representing the number of micro-segments this persona comprises.
+    4.  'target_profiles': A list of exactly 4 specific user profiles that can be used for campaign targeting (e.g., 'UPSC Aspirants', 'IELTS Test Takers') related to the persona.
+
+    CRITICAL: Ensure the tone is professional and client-facing. Adhere strictly to all constraints. Your final output must ONLY be the raw JSON object, without any surrounding text, markdown, or explanations.
+
   expected_output: >
     The output should be a json object in the following format:
     {
@@ -93,7 +94,8 @@ persona_task:
         {
       "title": "Persona Title",
       "description": "Persona Description",
-      "segments": nof of segments in the persona
+      "segments": nof of segments in the persona,
+      "target_profiles": list of 6 target profiles
       }]
     }
     example:
@@ -102,32 +104,63 @@ persona_task:
         {
           "title": "📝 Education & Training Enthusiasts",
           "description": "Users reading about education, training, admissions, and exams with education apps",
-          "segments": 8
+          "segments": 8,
+          "target_profiles": ["Competitive Exam Preparation Candidates (UPSC, NEET, JEE, CAT, etc.)", "Skill Enhancement Course Participants", "University Admission Aspirants (Domestic & International)", "Online Certification & MOOC Learners", "Entrance Exam Registrants (CUET, CLAT, GATE)", "Career Counseling and Aptitude Testing Seekers"]
         },
         {
           "title": "📚 Academic App Users",
           "description": "Students using educational apps like BYJU's, Khan Academy, and exam preparation tools",
-          "segments": 12
+          "segments": 12,
+          "target_profiles": [
+            "K-12 eLearning Platform Users (BYJU’s, Toppr, Vedantu)",
+            "Test Prep App Users (Unacademy, Gradeup, Adda247)",
+            "Interactive STEM Learners (Khan Academy, PhET, GeoGebra)",
+            "Adaptive Learning System Participants"
+          ]
         },
         {
           "title": "🌐 Education Site Visitors",
           "description": "Students using educational apps like BYJU's, Khan Academy, and exam preparation tools",
-          "segments": 12
+          "segments": 12,
+          "target_profiles": [
+            "College Admission Information Seekers",
+            "Career Guidance Article Readers",
+            "Course Comparison and Review Browsers",
+            "Trending Education News Consumers"
+          ]
         },
         {
           "title": "🎓 Young Academic Minds",
           "description": "Youth segment with recent activity in educational content and career planning",
-          "segments": 8
+          "segments": 8,
+          "target_profiles": [
+            "Senior Secondary Students (Grades 10–12)",
+            "Foundation Program Students (Maths, Science, English)",
+            "Career Planning & Stream Selection Explorers",
+            "Early Mentorship & Counseling Program Participants"
+          ]
         },
         {
           "title": "🏆 Graduate Demographics",
           "description": "12th grade students, graduates, and diploma holders seeking career advancement",
-          "segments": 8
+          "segments": 8,
+          "target_profiles": [
+            "Polytechnic and Diploma Holders",
+            "12th Pass Career Planners (Vocational/Academic)",
+            "Open & Distance Learning Candidates",
+            "Job-Oriented Certification Course Seekers"
+          ]
         },
         {
           "title": "🌍 Study Abroad Aspirants",
           "description": "Students interested in pursuing international education opportunities",
-          "segments": 1
+          "segments": 1,
+          "target_profiles": [
+            "Undergraduate Study Abroad Applicants (US, Canada, Europe, Australia)",
+            "Graduate Program Seekers (MS, MBA, LLM, PhD)",
+            "Language Test Prep Candidates (IELTS, TOEFL, Duolingo English Test)",
+            "Exchange Program & Pathway Program Participants"
+          ]
         }
       ]
     }
@@ -255,7 +288,8 @@ formatting_task:
         {
           "title": "Persona Title",
           "description": "Persona Description",
-          "segments": nof of segments in the persona
+          "segments": number of segments in the persona,
+          "target_profiles": ["target profile 1", "target profile 2", "target profile 3", "target profile 4", "target profile 5", "target profile 6"]
         }
       ],
       "insights": [
