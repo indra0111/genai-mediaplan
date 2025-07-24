@@ -5,34 +5,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-# CONFIGURATION
-CLIENT_SECRET_FILE = 'client_secret_drive.json'
-TOKEN_FILE = 'token.json'
-SCOPES = [
-    'https://www.googleapis.com/auth/drive',
-    'https://www.googleapis.com/auth/spreadsheets'
-]
-SHARED_FOLDER_ID = '15Uu1qL-uFFMANn7b2rLlVq7HZG7ytJuH'
-
-# AUTHENTICATION
-creds = None
-if os.path.exists(TOKEN_FILE):
-    creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
-if not creds or not creds.valid:
-    if creds and creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-    else:
-        flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
-        creds = flow.run_local_server(port=0)
-    with open(TOKEN_FILE, 'w') as token:
-        token.write(creds.to_json())
-
-# INIT SERVICES
-drive_service = build('drive', 'v3', credentials=creds)
-slides_service = build('slides', 'v1', credentials=creds)
-sheets_service = build('sheets', 'v4', credentials=creds)
-
-def get_chart_ids(copied_sheet_id):
+def get_chart_ids(copied_sheet_id, sheets_service):
     response = sheets_service.spreadsheets().get(
         spreadsheetId=copied_sheet_id,
         includeGridData=False
@@ -47,7 +20,7 @@ def get_chart_ids(copied_sheet_id):
                 chart_map[sheet_title] = chart['chartId']
     return chart_map
 
-def update_charts_preserving_position(copied_slide_id, copied_sheet_id, chart_map, target_slide_index=1):
+def update_charts_preserving_position(copied_slide_id, slides_service, copied_sheet_id, chart_map, target_slide_index=1):
     presentation = slides_service.presentations().get(presentationId=copied_slide_id).execute()
     slides = presentation.get('slides')
 
@@ -106,7 +79,7 @@ def update_charts_preserving_position(copied_slide_id, copied_sheet_id, chart_ma
     else:
         print("⚠️ No charts replaced.")
         
-def update_chart_data_in_sheets(spreadsheet_id, chart_data):
+def update_chart_data_in_sheets(spreadsheet_id, sheets_service, chart_data):
     requests = []
 
     for sheet_name, values in chart_data.items():
@@ -133,10 +106,10 @@ def update_chart_data_in_sheets(spreadsheet_id, chart_data):
 
     print(f"✅ Updated data in {len(chart_data)} sheet(s): {list(chart_data.keys())}")
     
-def update_charts_in_slides(copied_slide_id, copied_sheet_id, target_slide_index, chart_data=None):
-    chart_ids_map = get_chart_ids(copied_sheet_id)
-    update_charts_preserving_position(copied_slide_id, copied_sheet_id, chart_ids_map, target_slide_index)
+def update_charts_in_slides(copied_slide_id, slides_service, copied_sheet_id, sheets_service, target_slide_index, chart_data=None):
+    chart_ids_map = get_chart_ids(copied_sheet_id, sheets_service)
+    update_charts_preserving_position(copied_slide_id, slides_service, copied_sheet_id, chart_ids_map, target_slide_index)
     if chart_data:
-        update_chart_data_in_sheets(copied_sheet_id, chart_data)
+        update_chart_data_in_sheets(copied_sheet_id, sheets_service, chart_data)
     
     

@@ -15,10 +15,10 @@ from genai_mediaplan.utils.persona import update_persona_content
 SCOPES = ['https://www.googleapis.com/auth/drive']
 CLIENT_SECRET_FILE = 'client_secret_drive.json'
 TOKEN_FILE = 'token.json'
-# SOURCE_FILE_ID = '1ruQjp-BGuOYrhvZYoh5_L7OntTjmtQYj6renzsL7aOg'
-SOURCE_FILE_ID = '1f9nJb5rQ1IIulTe4QYvVvJziJxxd8gMDRWyet6_vKpw'
-SOURCE_SHEET_ID = '1zGHhqOw3fsSHqPs4zD1RsFk1H0MTpd5Et65LkK2DZq0'
-SHARED_FOLDER_ID = '15Uu1qL-uFFMANn7b2rLlVq7HZG7ytJuH'
+SOURCE_FILE_ID = os.getenv("SOURCE_FILE_ID")
+SOURCE_SHEET_ID = os.getenv("SOURCE_SHEET_ID")
+SHARED_FOLDER_ID = os.getenv("SHARED_FOLDER_ID")
+
 CHART_SLIDE_INDEX = 4
 PERSONA_SLIDE_INDEX_4 = 6
 PERSONA_SLIDE_INDEX_6 = 7
@@ -38,6 +38,7 @@ if not creds or not creds.valid:
         
 drive_service = build('drive', 'v3', credentials=creds)
 slides_service = build('slides', 'v1', credentials=creds)
+sheets_service = build('sheets', 'v4', credentials=creds)
 
 def is_simple_emoji(char):
     return unicodedata.category(char) in ['So', 'Sk'] or ord(char) > 10000
@@ -441,7 +442,7 @@ def get_copy_of_presentation(cohort_name, llm_response_json, audience_forecast):
     delete_requests = delete_slides_requests(copied_file_id, persona_slide_index_to_discard)
     update_requests = update_slides_content(copied_file_id, data)
     update_requests_numerical = get_update_requests_for_numerical_data_in_slides(copied_file_id, audience_forecast)
-    update_charts_in_slides(copied_file_id, copied_sheet_id, CHART_SLIDE_INDEX, None)
+    update_charts_in_slides(copied_file_id, slides_service, copied_sheet_id, sheets_service, CHART_SLIDE_INDEX, None)
     final_requests = update_requests + update_requests_numerical + delete_requests
     if final_requests:
         slides_service.presentations().batchUpdate(
