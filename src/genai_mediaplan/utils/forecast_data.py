@@ -45,7 +45,7 @@ def export_table_as_json(cohort_id):
             FROM dfp_runs
             JOIN template_cohort_report ON dfp_runs.report_id = template_cohort_report.report_id
             WHERE template_cohort_report.cohort_id = (
-                SELECT id FROM mediaplan_cohorts WHERE name = %s
+                SELECT id FROM mediaplan_cohorts WHERE name = %s AND is_deleted=0
             );
             """
             cursor.execute(sql, (cohort_id,))
@@ -57,7 +57,6 @@ def export_table_as_json(cohort_id):
 
             columns = [desc[0] for desc in cursor.description]
             result_table = [dict(zip(columns, row)) for row in rows]
-
             final_output = process_forecast_data(result_table)
             return final_output
     finally:

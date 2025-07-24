@@ -47,9 +47,9 @@ def main():
                 "message": error_msg
             }
 
-    # Write all collected responses to a JSON file
-    with open("mediaplan_responses.json", "w", encoding="utf-8") as json_file:
-        json.dump(responses, json_file, indent=4)
+        # Write all collected responses to a JSON file
+        with open("mediaplan_responses.json", "w", encoding="utf-8") as json_file:
+            json.dump(responses, json_file, indent=4)
         
 if __name__ == "__main__":
     main() 

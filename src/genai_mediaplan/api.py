@@ -12,6 +12,7 @@ from genai_mediaplan.crew import GenaiMediaplan
 from genai_mediaplan.utils.forecast_data import export_table_as_json
 from genai_mediaplan.utils.helper import extract_json_from_markdown_or_json
 from genai_mediaplan.utils.update_google_slides_content import get_copy_of_presentation
+from genai_mediaplan.utils.update_forecast_data_in_slides import update_forecast_data_for_cohort
 
 # Load environment variables
 load_dotenv(override=True)
@@ -28,10 +29,23 @@ class CohortRequest(BaseModel):
     audience_data: Optional[Dict[str, Any]] = None
     forecast_data: Optional[Dict[str, Any]] = None
 
+class UpdatePresentationRequest(BaseModel):
+    cohort_name: str
+    presentation_id: str
+    forecast_data: Optional[Dict[str, Any]] = None
+
 class CohortResponse(BaseModel):
     status: str
     message: str
     cohort_name: str
+    google_slides_url: Optional[str] = None
+    error: Optional[str] = None
+
+class UpdatePresentationResponse(BaseModel):
+    status: str
+    message: str
+    cohort_name: str
+    presentation_id: str
     google_slides_url: Optional[str] = None
     error: Optional[str] = None
 
@@ -110,6 +124,39 @@ async def generate_mediaplan(request: CohortRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Error generating mediaplan: {str(e)}"
+        )
+
+@app.post("/update-numerical-data-in-presentation", response_model=UpdatePresentationResponse)
+async def update_numerical_data_in_presentation(request: UpdatePresentationRequest):
+    """
+    Update an existing Google Slides presentation with new cohort data.
+    
+    This endpoint will:
+    1. Update the existing presentation with new forecast data
+    2. Return the updated presentation URL
+    """
+    try:
+        if request.forecast_data:
+            forecast_data = request.forecast_data
+        else:
+            data = export_table_as_json(request.cohort_name)
+            forecast_data = data['results']
+        update_forecast_data_for_cohort(forecast_data, request.presentation_id)
+        
+        google_slides_url = f"https://drive.google.com/file/d/{request.presentation_id}"
+        
+        return UpdatePresentationResponse(
+            status="success",
+            message=f"Presentation updated successfully for {request.cohort_name}",
+            cohort_name=request.cohort_name,
+            presentation_id=request.presentation_id,
+            google_slides_url=google_slides_url
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error updating presentation: {str(e)}"
         )
 
 @app.post("/generate-mediaplan-async")
