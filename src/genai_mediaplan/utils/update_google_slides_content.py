@@ -1,5 +1,6 @@
 import json
 import unicodedata
+import regex
 # from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from datetime import datetime
@@ -40,16 +41,16 @@ drive_service = build('drive', 'v3', credentials=creds)
 slides_service = build('slides', 'v1', credentials=creds)
 sheets_service = build('sheets', 'v4', credentials=creds)
 
-def is_simple_emoji(char):
-    return unicodedata.category(char) in ['So', 'Sk'] or ord(char) > 10000
+def is_simple_emoji(grapheme):
+    return any(unicodedata.category(char) in ['So', 'Sk'] or ord(char) > 10000 for char in grapheme)
 
 def process_title_with_emoji(title):
     title = title.strip()
     if not title:
         return title
-    last_char = title[-1]
-    if is_simple_emoji(last_char):
-        title = title[:-1].rstrip()
+    graphemes = regex.findall(r'\X', title)
+    if graphemes and is_simple_emoji(graphemes[-1]):
+        title = ''.join(graphemes[:-1]).rstrip()
     return title
 
 def get_content_to_replace_in_slides(cohort_name, llm_response_json, audience_forecast):
