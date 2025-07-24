@@ -6,16 +6,16 @@ definition_task:
     Use persuasive, data-driven, and professional language. Avoid generic statements and repetition.
     Output only the JSON object, with no extra text or commentary.
     Before submitting, ensure:
-      1) The definition is exactly 3 lines and maximum 450 characters,
+      1) The definition has maximum 450 characters,
       2) All key metrics and segments are referenced,
       3) The tone is professional and client-facing,
       4) The output is a valid JSON object as per the example,
       5) No extra text is included.
   expected_output: >
-    A 3-line description introducing the cohort, referencing all key metrics and segments.
+    A description introducing the cohort, referencing all key metrics and segments.
     The output should be a json object in the following format:
     {
-      "cohort_definition": "A 3-line description introducing the cohort, referencing all key metrics and segments."
+      "cohort_definition": "A description introducing the cohort, referencing all key metrics and segments."
     }
     example:
       {
@@ -32,10 +32,11 @@ data_signals_task:
     Output only the JSON array, with no extra text or commentary.
     Before submitting, ensure:
       1) There are 3 categories, each with a unique title and 5 signals,
-      2) Titles include an emoji and are under 40 characters,
+      2) Titles start with an emoji and are under 40 characters,
       3) Each data signal is under 60 characters and actionable,
       4) The output is a valid JSON array as per the example,
       5) No extra text is included.
+      6) The title should strictly include only one emoji and that too should be its first character.
   expected_output: >
     A json object in the following format:
     {
@@ -80,10 +81,10 @@ persona_task:
     The output must be a single JSON object with a root key named "personas". This key will contain an array of exactly 6 highly differentiated audience persona objects.
 
     For each of the 6 persona objects in the array, you must include:
-    1.  'title': A memorable, descriptive title (max 35 chars). The title should start with an emoji and there should be no more than one emoji.
+    1.  'title': A memorable, descriptive title (max 35 chars). The title should start with an emoji. There should strictly be only one emoji in the title.
     2.  'description': An actionable description of the persona's core motivation and media habits (max 85 chars).
     3.  'segments': An integer representing the number of micro-segments this persona comprises.
-    4.  'target_profiles': A list of exactly 4 specific user profiles that can be used for campaign targeting (e.g., 'UPSC Aspirants', 'IELTS Test Takers') related to the persona.
+    4.  'target_profiles': A list of 4 specific user profiles that can be used for campaign targeting (e.g., 'UPSC Aspirants', 'IELTS Test Takers') related to the persona. The total count of characters in the target_profiles should be less than 130.
 
     CRITICAL: Ensure the tone is professional and client-facing. Adhere strictly to all constraints. Your final output must ONLY be the raw JSON object, without any surrounding text, markdown, or explanations.
 
@@ -95,7 +96,7 @@ persona_task:
       "title": "Persona Title",
       "description": "Persona Description",
       "segments": nof of segments in the persona,
-      "target_profiles": list of 6 target profiles
+      "target_profiles": list of 4 target profiles
       }]
     }
     example:
@@ -105,7 +106,7 @@ persona_task:
           "title": "📝 Education & Training Enthusiasts",
           "description": "Users reading about education, training, admissions, and exams with education apps",
           "segments": 8,
-          "target_profiles": ["Competitive Exam Preparation Candidates (UPSC, NEET, JEE, CAT, etc.)", "Skill Enhancement Course Participants", "University Admission Aspirants (Domestic & International)", "Online Certification & MOOC Learners", "Entrance Exam Registrants (CUET, CLAT, GATE)", "Career Counseling and Aptitude Testing Seekers"]
+          "target_profiles": ["Competitive Exam Preparation Candidates (UPSC, NEET, JEE, CAT, etc.)", "Skill Enhancement Course Participants", "University Admission Aspirants (Domestic & International)", "Online Certification & MOOC Learners"]
         },
         {
           "title": "📚 Academic App Users",
@@ -175,9 +176,10 @@ insight_task:
     Output only the JSON array, with no extra text or commentary.
     Before submitting, ensure:
       1) There are 4 insights, each with a unique title (with emoji),
-      2) Each description is under 235 characters and actionable,
-      3) The output is a valid JSON array as per the example,
-      4) No extra text is included.
+      2) The title should strictly start with and include only one emoji
+      3) Each description is under 235 characters and actionable,
+      4) The output is a valid JSON array as per the example,
+      5) No extra text is included.
   expected_output: >
     A json object in the following format:
     {
@@ -226,7 +228,7 @@ market_edge_synthesizer_task:
 
 recommendation_task:
   description: >
-    Based on the cohort insights and performance indicators, write 4 tactical media strategy recommendations for targeting the cohort {cohort_name}. The audience segments data {audience_data} will be useful to generate the recommendations. Each recommendation must be tactical, actionable, and directly reference cohort data. The title should have maximum 100 characters. The description should be a 1-2 line description of the recommendation with maximum 245 characters. Avoid generic advice; tie each recommendation to a specific metric, persona, or insight. Use a professional, client-facing tone. Output only the JSON array, with no extra text or commentary. Before submitting, ensure: 1) There are 4 recommendations, each with a unique title, 2) Each description is under 245 characters and actionable, 3) The output is a valid JSON array as per the example, 4) No extra text is included.
+    Based on the cohort insights and performance indicators, write 4 tactical media strategy recommendations for targeting the cohort {cohort_name}. The audience segments data {audience_data} will be useful to generate the recommendations. Each recommendation must be tactical, actionable, and directly reference cohort data. The title should have maximum 100 characters. The description should be a 1-2 line description of the recommendation with maximum 245 characters. Avoid generic advice; tie each recommendation to a specific metric, persona, or insight. Use a professional, client-facing tone. Output only the JSON array, with no extra text or commentary. Before submitting, ensure: 1) There are 4 recommendations, each with a unique title, 2) Each description is under 245 characters and actionable, 3) The output is a valid JSON array as per the example, 4) No extra text is included, 5) Make sure not to include the keys from the audience segments data in the recommendations and also avoid using emoji in the title.
   expected_output: >
     A bullet list of 4 actionable media planning suggestions, referencing all available metrics and segments.
     The output should be a json object in the following format:
@@ -242,7 +244,7 @@ recommendation_task:
       {
       "recommendations": [
         { 
-        "title": "🎯 Launch with All Cluster Strategy",
+        "title": "Launch with All Cluster Strategy",
         "description": "Maximize reach with comprehensive TIL network approach for 54.91M users and 164.73M impressions. Ideal for large-scale education campaigns requiring maximum visibility across all demographics."
       },
       {

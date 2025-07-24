@@ -231,7 +231,7 @@ def update_textboxes(slides_service, presentation_id, textbox_ids, styles, desir
 def update_persona_content(slides_service, presentation_id, slide_index, data):
     desired_count = 6
     for i in range(6):
-        if data.get(f"persona_{i+1}_title", {}).strip() == "":
+        if data.get(f"persona_{i+1}_title", "").strip() == "":
             desired_count = i
             break
     textbox_ids, styles = find_object_ids_by_alt_description(slides_service, presentation_id, slide_index)

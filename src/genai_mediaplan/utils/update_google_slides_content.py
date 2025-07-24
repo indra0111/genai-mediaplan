@@ -1,4 +1,5 @@
 import json
+import unicodedata
 # from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from datetime import datetime
@@ -37,6 +38,18 @@ if not creds or not creds.valid:
         
 drive_service = build('drive', 'v3', credentials=creds)
 slides_service = build('slides', 'v1', credentials=creds)
+
+def is_simple_emoji(char):
+    return unicodedata.category(char) in ['So', 'Sk'] or ord(char) > 10000
+
+def process_title_with_emoji(title):
+    title = title.strip()
+    if not title:
+        return title
+    last_char = title[-1]
+    if is_simple_emoji(last_char):
+        title = title[:-1].rstrip()
+    return title
 
 def get_content_to_replace_in_slides(cohort_name, llm_response_json, audience_forecast):
     def safe_get(lst, index, default=" "):
@@ -85,7 +98,8 @@ def get_content_to_replace_in_slides(cohort_name, llm_response_json, audience_fo
     
     # Add data signals (3 titles, each with 5 signals)
     for i in range(3):
-        data[f"data_signal_{i+1}_title"] = safe_get_title(llm_response_json.get("data_signals", []), i)
+        title = safe_get_title(llm_response_json.get("data_signals", []), i)
+        data[f"data_signal_{i+1}_title"] = process_title_with_emoji(title)
         for j in range(5):
             key = f"data_signal_{i+1}_{j+1}"
             val = safe_get_data_signals(llm_response_json.get("data_signals", []), i, j)
@@ -95,6 +109,7 @@ def get_content_to_replace_in_slides(cohort_name, llm_response_json, audience_fo
     # Add personas (up to 6)
     for i in range(6):
         title = safe_get_title(llm_response_json.get("personas", []), i)
+        title = process_title_with_emoji(title)
         if title:
             parts = title.split(" ")
             emoji = parts[0]
@@ -105,7 +120,8 @@ def get_content_to_replace_in_slides(cohort_name, llm_response_json, audience_fo
 
     # Add insights (up to 3)
     for i in range(3):
-        data[f"insight_{i+1}_title"] = safe_get_title(llm_response_json.get("insights", []), i)
+        title = safe_get_title(llm_response_json.get("insights", []), i)
+        data[f"insight_{i+1}_title"] = process_title_with_emoji(title)
         data[f"insight_{i+1}_description"] = safe_get_desc(llm_response_json.get("insights", []), i)
 
     # Add recommendations (up to 4)
@@ -256,7 +272,6 @@ def replace_table_cell_text(table_element, table_object_id, row_index, col_index
     return requests
 
 def update_requests_for_tablular_data_in_slides(presentation_id, data_rows, table_alt_text):
-    print(f"Updating table with alt_text: {table_alt_text} with data: {data_rows}")
     requests = []
 
     # Get the presentation
@@ -397,7 +412,7 @@ def delete_slides_requests(presentation_id, persona_slide_index):
 def get_persona_slide_index(data):
     desired_count = 6
     for i in range(6):
-        if data.get(f"persona_{i+1}_title", {}).strip() == "":
+        if data.get(f"persona_{i+1}_title", "").strip() == "":
             desired_count = i
             break
     return (PERSONA_SLIDE_INDEX_4, PERSONA_SLIDE_INDEX_6) if desired_count == 4 else (PERSONA_SLIDE_INDEX_6, PERSONA_SLIDE_INDEX_4)
