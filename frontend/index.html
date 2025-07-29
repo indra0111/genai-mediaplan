@@ -1,0 +1,591 @@
+ 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GenAI Mediaplan Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .auth-section {
+            border: 2px solid #e1e5e9;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .auth-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .user-id-display {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-link {
+            display: inline-block;
+            background: #28a745;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .result-link:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 GenAI Mediaplan</h1>
+            <p>Generate personalized media plans with AI and save to your Google Drive</p>
+        </div>
+
+        <!-- Authentication Section -->
+        <div class="auth-section">
+            <h3>🔐 Google Drive Authentication</h3>
+            <div class="user-id-display" id="userIdDisplay">
+                User ID: <span id="userId">Not set</span>
+            </div>
+            
+            <div class="form-group">
+                <label for="userIdInput">User ID:</label>
+                <input type="text" id="userIdInput" placeholder="Enter a unique user ID" value="user_123">
+            </div>
+
+            <button class="btn" id="setUserIdBtn" onclick="setUserId()">Set User ID</button>
+            
+            <div id="authStatus" class="status info hidden">
+                Authentication status will appear here
+            </div>
+
+            <button class="btn" id="startAuthBtn" onclick="startAuth()" disabled>
+                <span class="loading hidden" id="authLoading"></span>
+                Start Google Authentication
+            </button>
+
+            <button class="btn" id="checkOAuthBtn" onclick="checkOAuthStatus()">
+                Check OAuth Configuration
+            </button>
+
+            <button class="btn" id="checkAuthBtn" onclick="checkAuthStatus()" disabled>
+                Check Authentication Status
+            </button>
+
+            <button class="btn" id="logoutBtn" onclick="logout()" disabled>
+                Logout
+            </button>
+        </div>
+
+        <!-- Mediaplan Generation Section -->
+        <div class="auth-section" id="generationSection" style="display: none;">
+            <h3>📊 Generate Mediaplan</h3>
+            
+            <div class="form-group">
+                <label for="cohortSelect">Select Cohort:</label>
+                <select id="cohortSelect">
+                    <option value="">Choose a cohort...</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Education">Education</option>
+                    <option value="Travel">Travel</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Technology">Technology</option>
+                </select>
+            </div>
+
+            <button class="btn" id="generateBtn" onclick="generateMediaplan()" disabled>
+                <span class="loading hidden" id="generateLoading"></span>
+                Generate Mediaplan
+            </button>
+
+            <div id="generationStatus" class="status info hidden">
+                Generation status will appear here
+            </div>
+        </div>
+
+        <!-- Update Presentation Section -->
+        <div class="auth-section" id="updateSection" style="display: none;">
+            <h3>🔄 Update Presentation</h3>
+            
+            <div class="form-group">
+                <label for="cohortSelectUpdate">Select Cohort:</label>
+                <select id="cohortSelectUpdate">
+                    <option value="">Choose a cohort...</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Education">Education</option>
+                    <option value="Travel">Travel</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Healthcare">Healthcare</option>
+                    <option value="Technology">Technology</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="presentationIdInput">Presentation ID:</label>
+                <input type="text" id="presentationIdInput" placeholder="Enter Google Slides presentation ID">
+            </div>
+
+            <button class="btn" id="updateBtn" onclick="updatePresentation()" disabled>
+                <span class="loading hidden" id="updateLoading"></span>
+                Update Presentation
+            </button>
+
+            <div id="updateStatus" class="status info hidden">
+                Update status will appear here
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Detect API port dynamically
+        const API_BASE_URL = window.location.port === '3000' ? 'http://localhost:8000' : 
+                            window.location.port === '3001' ? 'http://localhost:8001' :
+                            window.location.port === '3002' ? 'http://localhost:8002' :
+                            'http://localhost:8000'; // fallback
+        
+        let currentUserId = '';
+
+        // Set User ID
+        function setUserId() {
+            const userIdInput = document.getElementById('userIdInput');
+            const userId = userIdInput.value.trim();
+            
+            if (!userId) {
+                showStatus('authStatus', 'Please enter a user ID', 'error');
+                return;
+            }
+
+            currentUserId = userId;
+            document.getElementById('userId').textContent = userId;
+            document.getElementById('startAuthBtn').disabled = false;
+            document.getElementById('checkAuthBtn').disabled = false;
+            
+            showStatus('authStatus', `User ID set to: ${userId}`, 'success');
+        }
+
+        // Start OAuth Authentication
+        async function startAuth() {
+            if (!currentUserId) {
+                showStatus('authStatus', 'Please set a user ID first', 'error');
+                return;
+            }
+
+            setLoading('authLoading', true);
+            document.getElementById('startAuthBtn').disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/start`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUserId,
+                        redirect_uri: API_BASE_URL + '/auth/callback'
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showStatus('authStatus', 'Authorization URL created. Please complete the OAuth flow.', 'info');
+                    
+                    // Open the auth URL in a new window
+                    window.open(data.auth_url, '_blank', 'width=600,height=600');
+                    
+                    // Check auth status after a delay
+                    setTimeout(checkAuthStatus, 5000);
+                } else {
+                    if (response.status === 503 && data.detail && data.detail.error === "OAuth not configured") {
+                        // Handle OAuth configuration error
+                        let errorMessage = '<strong>OAuth not configured</strong><br><br>';
+                        errorMessage += '<strong>Setup Instructions:</strong><br>';
+                        data.detail.setup_instructions.forEach((instruction, index) => {
+                            errorMessage += `${index + 1}. ${instruction}<br>`;
+                        });
+                        errorMessage += '<br><strong>Quick Steps:</strong><br>';
+                        errorMessage += '1. Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a><br>';
+                        errorMessage += '2. Create OAuth 2.0 credentials<br>';
+                        errorMessage += '3. Download and rename to client_secret_drive.json<br>';
+                        errorMessage += '4. Place in project root directory<br>';
+                        errorMessage += '5. Restart the application';
+                        
+                        showStatus('authStatus', errorMessage, 'error');
+                    } else {
+                        showStatus('authStatus', `Error: ${data.detail}`, 'error');
+                    }
+                }
+            } catch (error) {
+                showStatus('authStatus', `Error: ${error.message}`, 'error');
+            } finally {
+                setLoading('authLoading', false);
+                document.getElementById('startAuthBtn').disabled = false;
+            }
+        }
+
+        // Check OAuth Configuration Status
+        async function checkOAuthStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/oauth-status`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.oauth_configured) {
+                        showStatus('authStatus', '✅ OAuth is properly configured and ready to use!', 'success');
+                    } else {
+                        let errorMessage = '<strong>❌ OAuth not configured</strong><br><br>';
+                        errorMessage += '<strong>Setup Instructions:</strong><br>';
+                        data.instructions.forEach((instruction, index) => {
+                            errorMessage += `${index + 1}. ${instruction}<br>`;
+                        });
+                        errorMessage += '<br><strong>Quick Steps:</strong><br>';
+                        errorMessage += '1. Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a><br>';
+                        errorMessage += '2. Create OAuth 2.0 credentials<br>';
+                        errorMessage += '3. Download and rename to client_secret_drive.json<br>';
+                        errorMessage += '4. Place in project root directory<br>';
+                        errorMessage += '5. Restart the application';
+                        
+                        showStatus('authStatus', errorMessage, 'error');
+                    }
+                } else {
+                    showStatus('authStatus', `Error: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('authStatus', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Check Authentication Status
+        async function checkAuthStatus() {
+            if (!currentUserId) {
+                showStatus('authStatus', 'Please set a user ID first', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/status/${currentUserId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.oauth_available === false) {
+                        showStatus('authStatus', '❌ OAuth not configured. Please set up OAuth credentials first.', 'error');
+                        return;
+                    }
+                    
+                    if (data.authenticated) {
+                        showStatus('authStatus', '✅ Successfully authenticated with Google!', 'success');
+                        document.getElementById('logoutBtn').disabled = false;
+                        document.getElementById('generationSection').style.display = 'block';
+                        document.getElementById('updateSection').style.display = 'block';
+                        document.getElementById('generateBtn').disabled = false;
+                        document.getElementById('updateBtn').disabled = false;
+                    } else {
+                        showStatus('authStatus', '❌ Not authenticated. Please complete the OAuth flow.', 'error');
+                    }
+                } else {
+                    showStatus('authStatus', `Error: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('authStatus', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Logout
+        async function logout() {
+            if (!currentUserId) {
+                showStatus('authStatus', 'No user to logout', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/logout/${currentUserId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showStatus('authStatus', 'Successfully logged out', 'success');
+                    document.getElementById('logoutBtn').disabled = true;
+                    document.getElementById('generationSection').style.display = 'none';
+                    document.getElementById('updateSection').style.display = 'none';
+                    document.getElementById('generateBtn').disabled = true;
+                    document.getElementById('updateBtn').disabled = true;
+                } else {
+                    const data = await response.json();
+                    showStatus('authStatus', `Error: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('authStatus', `Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Generate Mediaplan
+        async function generateMediaplan() {
+            const cohortSelect = document.getElementById('cohortSelect');
+            const cohort = cohortSelect.value;
+
+            if (!cohort) {
+                showStatus('generationStatus', 'Please select a cohort', 'error');
+                return;
+            }
+
+            setLoading('generateLoading', true);
+            document.getElementById('generateBtn').disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/generate-mediaplan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUserId,
+                        cohort_name: cohort
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showStatus('generationStatus', 
+                        `✅ Mediaplan generated successfully! 
+                        <a href="${data.google_slides_url}" target="_blank" class="result-link">Open in Google Drive</a>`, 
+                        'success'
+                    );
+                } else {
+                    showStatus('generationStatus', `Error: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('generationStatus', `Error: ${error.message}`, 'error');
+            } finally {
+                setLoading('generateLoading', false);
+                document.getElementById('generateBtn').disabled = false;
+            }
+        }
+
+        // Update Presentation
+        async function updatePresentation() {
+            const cohortSelect = document.getElementById('cohortSelectUpdate');
+            const presentationIdInput = document.getElementById('presentationIdInput');
+            const cohort = cohortSelect.value;
+            const presentationId = presentationIdInput.value.trim();
+
+            if (!cohort) {
+                showStatus('updateStatus', 'Please select a cohort', 'error');
+                return;
+            }
+
+            if (!presentationId) {
+                showStatus('updateStatus', 'Please enter a presentation ID', 'error');
+                return;
+            }
+
+            setLoading('updateLoading', true);
+            document.getElementById('updateBtn').disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/user/update-presentation`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        user_id: currentUserId,
+                        cohort_name: cohort,
+                        presentation_id: presentationId
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showStatus('updateStatus', 
+                        `✅ Presentation updated successfully! 
+                        <a href="${data.google_slides_url}" target="_blank" class="result-link">Open in Google Drive</a>`, 
+                        'success'
+                    );
+                } else {
+                    showStatus('updateStatus', `Error: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                showStatus('updateStatus', `Error: ${error.message}`, 'error');
+            } finally {
+                setLoading('updateLoading', false);
+                document.getElementById('updateBtn').disabled = false;
+            }
+        }
+
+        // Helper functions
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = message; // Changed from textContent to innerHTML to support links
+            element.className = `status ${type}`;
+            element.classList.remove('hidden');
+        }
+
+        function setLoading(elementId, isLoading) {
+            const element = document.getElementById(elementId);
+            if (isLoading) {
+                element.classList.remove('hidden');
+            } else {
+                element.classList.add('hidden');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set a default user ID
+            document.getElementById('userIdInput').value = 'user_' + Math.random().toString(36).substr(2, 9);
+            
+            // Display API URL for debugging
+            console.log('API Base URL:', API_BASE_URL);
+        });
+    </script>
+</body>
+</html> 
