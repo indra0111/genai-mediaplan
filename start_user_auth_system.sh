@@ -6,7 +6,7 @@ echo "🚀 Starting GenAI Mediaplan User Authentication System..."
 echo "=================================================="
 
 # Check if Python is installed
-if ! command -v python3 &> /dev/null; then
+if ! command -v python &> /dev/null; then
     echo "❌ Python 3 is not installed. Please install Python 3 first."
     exit 1
 fi
@@ -45,8 +45,10 @@ fi
 
 # Function to check if a port is in use
 check_port() {
-    if lsof -Pi :$1 -sTCP:LISTEN -t >/dev/null ; then
-        echo "⚠️  Port $1 is already in use."
+    port=$1
+    netstat -an | grep -q ":$port .*LISTENING"
+    if [ $? -eq 0 ]; then
+        echo "⚠️  Port $port is already in use."
         return 1
     fi
     return 0
@@ -56,7 +58,7 @@ check_port() {
 find_available_port() {
     local start_port=$1
     local port=$start_port
-    while lsof -Pi :$port -sTCP:LISTEN -t >/dev/null ; do
+    while netstat -an | grep -q ":$port .*LISTENING"; do
         port=$((port + 1))
     done
     echo $port
@@ -82,9 +84,9 @@ echo "✅ Ports configured: API=$API_PORT, Frontend=$FRONTEND_PORT"
 
 # Install dependencies if needed
 echo "📦 Checking dependencies..."
-if ! python3 -c "import google_auth_oauthlib" 2>/dev/null; then
+if ! python -c "import google_auth_oauthlib" 2>/dev/null; then
     echo "📦 Installing Google OAuth dependencies..."
-    pip3 install google-auth-oauthlib google-auth-httplib2
+    pip install google-auth-oauthlib google-auth-httplib2
 fi
 
 # Set environment variables for ports
@@ -94,7 +96,7 @@ export FRONTEND_PORT=$FRONTEND_PORT
 # Start API server in background
 echo "🔧 Starting API server on port $API_PORT..."
 cd src/genai_mediaplan
-python3 api.py &
+python api.py &
 API_PID=$!
 cd ../..
 
@@ -102,7 +104,7 @@ cd ../..
 sleep 3
 
 # Check if API server started successfully
-if ! lsof -Pi :$API_PORT -sTCP:LISTEN -t >/dev/null ; then
+if ! netstat -an | grep -q ":$API_PORT .*LISTENING"; then
     echo "❌ Failed to start API server"
     kill $API_PID 2>/dev/null
     exit 1
@@ -114,7 +116,7 @@ echo "✅ API server started successfully"
 echo "🌐 Starting frontend server on port $FRONTEND_PORT..."
 cd frontend
 # Update the frontend server to use the dynamic port
-python3 -c "
+python -c "
 import http.server
 import socketserver
 import os
@@ -143,7 +145,7 @@ cd ..
 sleep 2
 
 # Check if frontend server started successfully
-if ! lsof -Pi :$FRONTEND_PORT -sTCP:LISTEN -t >/dev/null ; then
+if ! netstat -an | grep -q ":$FRONTEND_PORT .*LISTENING"; then
     echo "❌ Failed to start frontend server"
     kill $API_PID $FRONTEND_PID 2>/dev/null
     exit 1

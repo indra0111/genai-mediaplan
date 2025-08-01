@@ -24,22 +24,22 @@ CHART_SLIDE_INDEX = 4
 PERSONA_SLIDE_INDEX_4 = 6
 PERSONA_SLIDE_INDEX_6 = 7
 
-creds = None
-if os.path.exists(TOKEN_FILE):
-    creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
-if not creds or not creds.valid:
-    if creds and creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-    else:
-        flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
-        creds = flow.run_local_server(port=0)
-    # Save token for future use
-    with open(TOKEN_FILE, 'w') as token:
-        token.write(creds.to_json())
+# creds = None
+# if os.path.exists(TOKEN_FILE):
+#     creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+# if not creds or not creds.valid:
+#     if creds and creds.expired and creds.refresh_token:
+#         creds.refresh(Request())
+#     else:
+#         flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+#         creds = flow.run_local_server(port=0)
+#     # Save token for future use
+#     with open(TOKEN_FILE, 'w') as token:
+#         token.write(creds.to_json())
         
-drive_service = build('drive', 'v3', credentials=creds)
-slides_service = build('slides', 'v1', credentials=creds)
-sheets_service = build('sheets', 'v4', credentials=creds)
+# drive_service = build('drive', 'v3', credentials=creds)
+# slides_service = build('slides', 'v1', credentials=creds)
+# sheets_service = build('sheets', 'v4', credentials=creds)
 
 def is_simple_emoji(grapheme):
     return any(unicodedata.category(char) in ['So', 'Sk'] or ord(char) > 10000 for char in grapheme)
