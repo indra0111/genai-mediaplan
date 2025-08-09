@@ -1,6 +1,9 @@
 import json
 import requests
 import os
+from genai_mediaplan.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 def get_audience_data(abvr):
     final_data = {}
@@ -11,7 +14,7 @@ def get_audience_data(abvr):
         for item in data:
             final_data[item["abvr"]] = {"name": item["audience_name"], "description": item["description"]}
     except Exception as e:
-        print(f"Error in getting audience data: {e}")
+        logger.error(f"Error in getting audience data: {e}")
         return {}
     return final_data
     
@@ -39,5 +42,5 @@ def export_table_as_json(cohort_name):
         return final_output
     
     except Exception as e:
-        print(f"Error in getting forecast data: {e}")
+        logger.error(f"Error in getting forecast data: {e}")
         return {}

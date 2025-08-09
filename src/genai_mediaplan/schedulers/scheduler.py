@@ -6,8 +6,9 @@ import concurrent.futures
 import json
 from genai_mediaplan.utils.forecast_data_api_based import export_table_as_json
 from genai_mediaplan.utils.update_forecast_data_in_slides import update_forecast_data_for_cohort
+from genai_mediaplan.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 class ForecastDataScheduler:
     """Scheduler for refreshing cohort datas"""
@@ -27,61 +28,63 @@ class ForecastDataScheduler:
             name='Refresh Cohort Data Weekly',
             replace_existing=True
         )
-        print("Scheduled jobs configured")
+        logger.info("Scheduled jobs configured")
     
     async def _scheduled_refresh_cohort_data(self):
         """Scheduled job to refresh cohort data"""
         try:
-            print("Starting scheduled cohort data refresh...")
+            logger.info("Starting scheduled cohort data refresh...")
             
             # Run in background thread to avoid blocking
             loop = asyncio.get_running_loop()
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 await loop.run_in_executor(executor, self.scheduled_refresh_cohort_data)
             
-            print("Scheduled cohort data refresh completed successfully")
+            logger.info("Scheduled cohort data refresh completed successfully")
         except Exception as e:
-            print(f"Error in scheduled cohort data refresh: {e}")
+            logger.error(f"Error in scheduled cohort data refresh: {e}")
 
     def scheduled_refresh_cohort_data(self):
         try:
             with open('mediaplan_responses.json', 'r') as f:
                 data = json.loads(f.read())
-            print("Starting to refresh all cohort data...", data)
+            logger.info(f"Starting to refresh all cohort data... Found {len(data)} cohorts")
             for cohort_name in data.keys():
-                print(f"Processing cohort: {cohort_name}")
+                logger.info(f"Processing cohort: {cohort_name}")
                 try:
                     presentation_id = data[cohort_name].get('google_slides_url', '').replace("https://docs.google.com/presentation/d/", "")
                     if not presentation_id:
+                        logger.warning(f"No presentation ID found for cohort {cohort_name}, skipping")
                         continue
                     data_to_update = export_table_as_json(cohort_name)
                     forecast_data = data_to_update['results']
-                    print(f"Updating data for {cohort_name} with presentation ID {presentation_id}")
-                    print(len(forecast_data.keys()), "forecast data keys")
+                    logger.info(f"Updating data for {cohort_name} with presentation ID {presentation_id}")
+                    logger.debug(f"Found {len(forecast_data.keys())} forecast data keys for {cohort_name}")
                     update_forecast_data_for_cohort(forecast_data, presentation_id)
+                    logger.info(f"Successfully updated data for {cohort_name}")
                 except Exception as e:
-                    print(f"❌ Failed to update data for {cohort_name}: {str(e)}")
+                    logger.error(f"Failed to update data for {cohort_name}: {str(e)}")
                     continue
-            print("✅ Successfully refreshed all cohort data.")
+            logger.info("Successfully refreshed all cohort data.")
         
         except Exception as e:
-            print(f"❌ Failed to refresh cohort data: {str(e)}")
+            logger.error(f"Failed to refresh cohort data: {str(e)}")
             
     def start(self):
         """Start the scheduler"""
         try:
             self.scheduler.start()
-            print("Scheduler started successfully")
+            logger.info("Scheduler started successfully")
         except Exception as e:
-            print(f"Error starting scheduler: {e}")
+            logger.error(f"Error starting scheduler: {e}")
     
     def stop(self):
         """Stop the scheduler"""
         try:
             self.scheduler.shutdown()
-            print("Scheduler stopped successfully")
+            logger.info("Scheduler stopped successfully")
         except Exception as e:
-            print(f"Error stopping scheduler: {e}")
+            logger.error(f"Error stopping scheduler: {e}")
     
     def get_status(self):
         """Get scheduler status and job information"""
@@ -100,22 +103,27 @@ class ForecastDataScheduler:
                 "jobs": jobs
             }
         except Exception as e:
-            print(f"Error getting scheduler status: {e}")
-            return {"error": str(e)}
+            logger.error(f"Error getting scheduler status: {e}")
+            return {
+                "scheduler_running": False,
+                "jobs": [],
+                "error": str(e)
+            }
     
     async def trigger_refresh(self):
         """Manually trigger the cohort data refresh"""
         try:
-            print("Manually triggering cohort data refresh...")
+            logger.info("Manually triggering cohort data refresh...")
             
             # Run in background thread to avoid blocking
             loop = asyncio.get_running_loop()
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 await loop.run_in_executor(executor, self._scheduled_refresh_cohort_data)
             
+            logger.info("Manual cohort data refresh completed successfully")
             return {"message": "Manual cohort data refresh completed successfully"}
         except Exception as e:
-            print(f"Error in manual cohort data refresh: {e}")
+            logger.error(f"Error in manual cohort data refresh: {e}")
             raise e
 
 # Global scheduler instance

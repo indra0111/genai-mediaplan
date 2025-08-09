@@ -4,6 +4,9 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
+from genai_mediaplan.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 def find_object_ids_by_alt_description(slides_service, presentation_id, slide_index):
     presentation = slides_service.presentations().get(presentationId=presentation_id).execute()
@@ -235,6 +238,6 @@ def update_persona_content(slides_service, presentation_id, slide_index, data):
             desired_count = i
             break
     textbox_ids, styles = find_object_ids_by_alt_description(slides_service, presentation_id, slide_index)
-    print(f"desired_count: {desired_count}")
+    logger.info(f"desired_count: {desired_count}")
     update_textboxes(slides_service, presentation_id, textbox_ids, styles, desired_count, data)
 

@@ -13,9 +13,13 @@ from genai_mediaplan.utils.forecast_data_api_based import export_table_as_json
 from genai_mediaplan.utils.helper import extract_json_from_markdown_or_json
 from genai_mediaplan.utils.update_google_slides_content import get_copy_of_presentation
 from genai_mediaplan.utils.update_forecast_data_in_slides import update_forecast_data_for_cohort
+from genai_mediaplan.utils.logger import get_logger
 
 # Load environment variables
 load_dotenv(override=True)
+
+# Set up logging
+logger = get_logger(__name__)
 
 app = FastAPI(
     title="GenAI Mediaplan API",
@@ -147,6 +151,7 @@ async def update_numerical_data_in_presentation(request: UpdatePresentationReque
     1. Update the existing presentation with new forecast data
     2. Return the updated presentation URL
     """
+    logger.info(f"Updating numerical data in presentation for {request.cohort_name}")
     try:
         if request.forecast_data:
             forecast_data = request.forecast_data
@@ -183,30 +188,31 @@ async def refresh_all_cohort_data():
     try:
         with open('mediaplan_responses.json', 'r') as f:
             data = json.loads(f.read())
-        print("Starting to refresh all cohort data...", data)
+        logger.info(f"Starting to refresh all cohort data... Found {len(data)} cohorts")
         for cohort_name in data.keys():
-            print(f"Processing cohort: {cohort_name}")
+            logger.info(f"Processing cohort: {cohort_name}")
             try:
                 presentation_id = data[cohort_name].get('google_slides_url', '').replace("https://docs.google.com/presentation/d/", "")
                 if not presentation_id:
+                    logger.warning(f"No presentation ID found for cohort {cohort_name}, skipping")
                     continue
                 data_to_update = export_table_as_json(cohort_name)
                 forecast_data = data_to_update['results']
-                print(f"Updating data for {cohort_name} with presentation ID {presentation_id}")
-                print(forecast_data)
-                print(len(forecast_data.keys()), "forecast data keys")
+                logger.info(f"Updating data for {cohort_name} with presentation ID {presentation_id}")
+                logger.debug(f"Found {len(forecast_data.keys())} forecast data keys for {cohort_name}")
                 update_forecast_data_for_cohort(forecast_data, presentation_id)
+                logger.info(f"Successfully updated data for {cohort_name}")
             except Exception as e:
-                print(f"❌ Failed to update data for {cohort_name}: {str(e)}")
+                logger.error(f"Failed to update data for {cohort_name}: {str(e)}")
                 continue
-        print("✅ Successfully refreshed all cohort data.")
+        logger.info("Successfully refreshed all cohort data.")
         return JSONResponse(
             status_code=200,
             content={"message": "Cohort data refreshed successfully"}
         )
     
     except Exception as e:
-        print(f"❌ Failed to refresh cohort data: {str(e)}")
+        logger.error(f"Failed to refresh cohort data: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Error refreshing cohort data: {str(e)}"
@@ -285,7 +291,7 @@ async def get_scheduler_status():
     try:
         return scheduler.get_status()
     except Exception as e:
-        print(f"Error getting scheduler status: {e}")
+        logger.error(f"Error getting scheduler status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     
 async def run_mediaplan_generation(task_id: str, cohort_name: str, audience_data: Optional[Dict], forecast_data: Optional[Dict]):
@@ -293,6 +299,8 @@ async def run_mediaplan_generation(task_id: str, cohort_name: str, audience_data
     Background task to run mediaplan generation.
     """
     try:
+        logger.info(f"Starting background mediaplan generation for task {task_id}, cohort: {cohort_name}")
+        
         # Update status
         task_status[task_id]["progress"] = 10
         task_status[task_id]["message"] = "Fetching data..."
@@ -301,14 +309,17 @@ async def run_mediaplan_generation(task_id: str, cohort_name: str, audience_data
         if audience_data and forecast_data:
             audience_data = audience_data
             forecast_data = forecast_data
+            logger.debug(f"Using provided data for cohort {cohort_name}")
         else:
             # Fetch data from database
+            logger.debug(f"Fetching data from database for cohort {cohort_name}")
             data = export_table_as_json(cohort_name)
             audience_data = data['abvr']
             forecast_data = data['results']
         
         task_status[task_id]["progress"] = 20
         task_status[task_id]["message"] = "Running CrewAI agents..."
+        logger.info(f"Running CrewAI agents for cohort {cohort_name}")
         
         # Prepare inputs for CrewAI
         inputs = {
@@ -322,6 +333,7 @@ async def run_mediaplan_generation(task_id: str, cohort_name: str, audience_data
         
         task_status[task_id]["progress"] = 80
         task_status[task_id]["message"] = "Creating Google Slides presentation..."
+        logger.info(f"Creating Google Slides presentation for cohort {cohort_name}")
         
         # Extract JSON from the generated report
         model_output_json = extract_json_from_markdown_or_json("final_report.md")
@@ -340,7 +352,10 @@ async def run_mediaplan_generation(task_id: str, cohort_name: str, audience_data
         task_status[task_id]["google_slides_url"] = google_slides_url
         task_status[task_id]["completed_at"] = datetime.now().isoformat()
         
+        logger.info(f"Successfully completed mediaplan generation for task {task_id}, cohort: {cohort_name}")
+        
     except Exception as e:
+        logger.error(f"Error in background mediaplan generation for task {task_id}, cohort: {cohort_name}: {str(e)}")
         # Update error status
         task_status[task_id]["status"] = "failed"
         task_status[task_id]["message"] = f"Error: {str(e)}"

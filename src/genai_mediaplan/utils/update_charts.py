@@ -4,6 +4,9 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
+from genai_mediaplan.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 def get_chart_ids(copied_sheet_id, sheets_service):
     response = sheets_service.spreadsheets().get(
@@ -25,7 +28,7 @@ def update_charts_preserving_position(copied_slide_id, slides_service, copied_sh
     slides = presentation.get('slides')
 
     if target_slide_index >= len(slides):
-        print(f"❌ Slide index {target_slide_index} does not exist in presentation.")
+        logger.error(f"Slide index {target_slide_index} does not exist in presentation.")
         return
 
     target_slide = slides[target_slide_index]
@@ -46,7 +49,7 @@ def update_charts_preserving_position(copied_slide_id, slides_service, copied_sh
             })
 
     if not chart_elements:
-        print("⚠️ No existing charts to replace.")
+        logger.error("No existing charts to replace.")
         return
 
     # Step 2: Replace charts using saved positions
@@ -75,9 +78,9 @@ def update_charts_preserving_position(copied_slide_id, slides_service, copied_sh
             presentationId=copied_slide_id,
             body={'requests': requests}
         ).execute()
-        print(f"✅ {len(requests)//2} charts replaced in slide {target_slide_index + 1}.")
+        logger.info(f"{len(requests)//2} charts replaced in slide {target_slide_index + 1}.")
     else:
-        print("⚠️ No charts replaced.")
+        logger.error("No charts replaced.")
         
 def update_chart_data_in_sheets(spreadsheet_id, sheets_service, chart_data):
     requests = []
@@ -91,7 +94,7 @@ def update_chart_data_in_sheets(spreadsheet_id, sheets_service, chart_data):
         })
 
     if not requests:
-        print("⚠️ No data to update.")
+        logger.error("No data to update.")
         return
 
     body = {
@@ -104,7 +107,7 @@ def update_chart_data_in_sheets(spreadsheet_id, sheets_service, chart_data):
         body=body
     ).execute()
 
-    print(f"✅ Updated data in {len(chart_data)} sheet(s): {list(chart_data.keys())}")
+    logger.info(f"Updated data in {len(chart_data)} sheet(s): {list(chart_data.keys())}")
     
 def update_charts_in_slides(copied_slide_id, slides_service, copied_sheet_id, sheets_service, target_slide_index, chart_data=None):
     chart_ids_map = get_chart_ids(copied_sheet_id, sheets_service)

@@ -1,5 +1,8 @@
 import re
 import json
+from genai_mediaplan.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 def extract_json_from_markdown_or_json(final_report_path):
     """
@@ -11,10 +14,10 @@ def extract_json_from_markdown_or_json(final_report_path):
         with open(final_report_path, 'r', encoding='utf-8') as f:
             content = f.read()
     except FileNotFoundError:
-        print(f"❌ File not found: {final_report_path}")
+        logger.error(f"File not found: {final_report_path}")
         return None
     except Exception as e:
-        print(f"❌ Error reading file: {e}")
+        logger.error(f"Error reading file: {e}")
         return None
 
     # Try case 1: JSON block in markdown
@@ -28,8 +31,8 @@ def extract_json_from_markdown_or_json(final_report_path):
     try:
         return json.loads(json_str)
     except json.JSONDecodeError as e:
-        print("❌ JSON decode error:", e)
-        print("⚠️ Offending JSON string (truncated):", json_str[:300])
+        logger.error(f"JSON decode error: {e}")
+        logger.error(f"Offending JSON string (truncated): {json_str[:300]}")
         return None
 
 def find_object_id_by_alt_description(slides, alt_title):

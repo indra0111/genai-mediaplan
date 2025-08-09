@@ -10,6 +10,9 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from genai_mediaplan.utils.update_charts import update_charts_in_slides
 from genai_mediaplan.utils.persona import update_persona_content
+from genai_mediaplan.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 # Set up credentials
 # SERVICE_ACCOUNT_FILE = 'service_account.json'
@@ -282,7 +285,7 @@ def update_requests_for_tablular_data_in_slides(presentation_id, data_rows, tabl
     for slide in presentation['slides']:
         for element in slide.get('pageElements', []):
             if element.get('description') == table_alt_text and 'table' in element:
-                print(f"Found table with alt_text: {table_alt_text}")
+                logger.info(f"Found table with alt_text: {table_alt_text}")
                 table = element['table']
                 object_id = element['objectId']
                 for row in range(len(data_rows)):
@@ -434,7 +437,7 @@ def get_copy_of_presentation(cohort_name, llm_response_json, audience_forecast):
             'parents': [SHARED_FOLDER_ID]
         }
     ).execute()
-    print(f"Copy created: https://drive.google.com/file/d/{copied_file['id']}")
+    logger.info(f"Copy created: https://drive.google.com/file/d/{copied_file['id']}")
     copied_file_id = copied_file['id']
     copied_sheet_id = sheet_copy['id']
     data, persona_data = get_content_to_replace_in_slides(cohort_name, llm_response_json, audience_forecast)
@@ -450,8 +453,8 @@ def get_copy_of_presentation(cohort_name, llm_response_json, audience_forecast):
             presentationId=copied_file_id,
             body={"requests": final_requests}
         ).execute()
-        print("✅ Text and paragraph formatting updated successfully.")
+        logger.info("Text and paragraph formatting updated successfully.")
     else:
-        print("ℹ️ No matching alt_text found.")
+        logger.info("No matching alt_text found.")
     return f"https://drive.google.com/file/d/{copied_file_id}"
     
