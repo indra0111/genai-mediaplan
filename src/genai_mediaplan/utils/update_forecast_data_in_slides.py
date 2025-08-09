@@ -99,7 +99,7 @@ def get_tabular_data_for_forecast_tables(preset_name, audience_forecast):
         entry = forecast_data.get(country)
         if entry:
             fcap_1 = round(entry["user"], 2)
-            fcap_3 = round(fcap_1 * 3, 2)
+            fcap_3 = round(min(fcap_1 * 3, entry["impr"]), 2)
             country_tier_state_data.append([country, str(fcap_1), str(fcap_3)])
             
     country_tier_state_data.append(["Geographic Tiers", "", ""])
@@ -107,7 +107,7 @@ def get_tabular_data_for_forecast_tables(preset_name, audience_forecast):
         entry = forecast_data.get(city_group)
         if entry:
             fcap_1 = round(entry["user"], 2)
-            fcap_3 = round(fcap_1 * 3, 2)
+            fcap_3 = round(min(fcap_1 * 3, entry["impr"]), 2)
             country_tier_state_data.append([city_group, str(fcap_1), str(fcap_3)])
             
     country_tier_state_data.append(["State", "", ""])
@@ -115,7 +115,7 @@ def get_tabular_data_for_forecast_tables(preset_name, audience_forecast):
         entry = forecast_data.get(state)
         if entry:
             fcap_1 = round(entry["user"], 2)
-            fcap_3 = round(fcap_1 * 3, 2)
+            fcap_3 = round(min(fcap_1 * 3, entry["impr"]), 2)
             country_tier_state_data.append([state, str(fcap_1), str(fcap_3)])
             
     city_data = []
@@ -125,7 +125,7 @@ def get_tabular_data_for_forecast_tables(preset_name, audience_forecast):
         entry = forecast_data.get(city)
         if entry:
             fcap_1 = round(entry["user"], 2)
-            fcap_3 = round(fcap_1 * 3, 2)
+            fcap_3 = round(min(fcap_1 * 3, entry["impr"]), 2)
             city_data.append([city, str(fcap_1), str(fcap_3)])
             
     return country_tier_state_data, city_data
