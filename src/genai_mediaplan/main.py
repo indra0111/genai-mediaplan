@@ -5,7 +5,7 @@ import os
 from datetime import datetime
 
 from genai_mediaplan.crew import GenaiMediaplan
-from genai_mediaplan.utils.forecast_data import export_table_as_json
+from genai_mediaplan.utils.forecast_data_api_based import export_table_as_json
 from genai_mediaplan.utils.helper import extract_json_from_markdown_or_json
 from genai_mediaplan.utils.update_google_slides_content import get_copy_of_presentation
 from dotenv import load_dotenv

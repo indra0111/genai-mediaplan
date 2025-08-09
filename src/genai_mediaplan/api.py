@@ -7,9 +7,9 @@ import json
 import os
 from datetime import datetime
 from dotenv import load_dotenv
-
+from genai_mediaplan.schedulers.scheduler import scheduler
 from genai_mediaplan.crew import GenaiMediaplan
-from genai_mediaplan.utils.forecast_data import export_table_as_json
+from genai_mediaplan.utils.forecast_data_api_based import export_table_as_json
 from genai_mediaplan.utils.helper import extract_json_from_markdown_or_json
 from genai_mediaplan.utils.update_google_slides_content import get_copy_of_presentation
 from genai_mediaplan.utils.update_forecast_data_in_slides import update_forecast_data_for_cohort
@@ -56,6 +56,18 @@ class HealthResponse(BaseModel):
 # Global variable to store task status
 task_status = {}
 
+# Startup event to start the scheduler
+@app.on_event("startup")
+async def start_scheduler():
+    """Start the scheduler when the FastAPI app starts"""
+    scheduler.start()
+
+# Shutdown event to stop the scheduler
+@app.on_event("shutdown")
+async def stop_scheduler():
+    """Stop the scheduler when the FastAPI app shuts down"""
+    scheduler.stop()
+    
 @app.get("/", response_model=HealthResponse)
 async def root():
     """Health check endpoint"""
@@ -158,6 +170,47 @@ async def update_numerical_data_in_presentation(request: UpdatePresentationReque
             status_code=500,
             detail=f"Error updating presentation: {str(e)}"
         )
+        
+@app.get("/refresh-all-cohort-data")
+async def refresh_all_cohort_data():
+    """
+    Refresh data for all cohorts.
+    
+    This endpoint will:
+    1. Fetch all cohorts from the database
+    2. Update their presentations with the latest forecast data
+    """
+    try:
+        with open('mediaplan_responses.json', 'r') as f:
+            data = json.loads(f.read())
+        print("Starting to refresh all cohort data...", data)
+        for cohort_name in data.keys():
+            print(f"Processing cohort: {cohort_name}")
+            try:
+                presentation_id = data[cohort_name].get('google_slides_url', '').replace("https://docs.google.com/presentation/d/", "")
+                if not presentation_id:
+                    continue
+                data_to_update = export_table_as_json(cohort_name)
+                forecast_data = data_to_update['results']
+                print(f"Updating data for {cohort_name} with presentation ID {presentation_id}")
+                print(forecast_data)
+                print(len(forecast_data.keys()), "forecast data keys")
+                update_forecast_data_for_cohort(forecast_data, presentation_id)
+            except Exception as e:
+                print(f"❌ Failed to update data for {cohort_name}: {str(e)}")
+                continue
+        print("✅ Successfully refreshed all cohort data.")
+        return JSONResponse(
+            status_code=200,
+            content={"message": "Cohort data refreshed successfully"}
+        )
+    
+    except Exception as e:
+        print(f"❌ Failed to refresh cohort data: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error refreshing cohort data: {str(e)}"
+        )
 
 @app.post("/generate-mediaplan-async")
 async def generate_mediaplan_async(request: CohortRequest, background_tasks: BackgroundTasks):
@@ -226,6 +279,15 @@ async def get_available_cohorts():
         "total": len(cohorts)
     }
 
+@app.get("/scheduler-status")
+async def get_scheduler_status():
+    """Get the current status of the scheduler and its jobs"""
+    try:
+        return scheduler.get_status()
+    except Exception as e:
+        print(f"Error getting scheduler status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
 async def run_mediaplan_generation(task_id: str, cohort_name: str, audience_data: Optional[Dict], forecast_data: Optional[Dict]):
     """
     Background task to run mediaplan generation.

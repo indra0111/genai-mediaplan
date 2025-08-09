@@ -11,18 +11,18 @@ slides_service = build('slides', 'v1', credentials=credentials)
 
 def get_non_tabular_forecast_data(audience_forecast):
     return {
-        "reach_cluster": f"{round(audience_forecast['TIL_All_Cluster_RNF']['India']['user'],2)}\nUser Reach (Reach fcap-1)",
-        "impressions_cluster": f"{round(min(audience_forecast['TIL_All_Cluster_RNF']['India']['user'] * 3, audience_forecast['TIL_All_Cluster_RNF']['India']['impr']),2)}\nTargetable Impressions (Impressions fcap-3)",
-        "reach_languages": f"{round(audience_forecast['TIL_All_Languages_RNF']['India']['user'],2)}\nUser Reach (Reach fcap-1)",
-        "impressions_languages": f"{round(min(audience_forecast['TIL_All_Languages_RNF']['India']['user'] * 3, audience_forecast['TIL_All_Languages_RNF']['India']['impr']),2)}\nTargetable Impressions (Impressions fcap-3)",
-        "reach_toi": f"{round(audience_forecast['TIL_TOI_Only_RNF']['India']['user'],2)}\nUser Reach (Reach fcap-1)",
-        "impressions_toi": f"{round(min(audience_forecast['TIL_TOI_Only_RNF']['India']['user'] * 3, audience_forecast['TIL_TOI_Only_RNF']['India']['impr']),2)}\nTargetable Impressions (Impressions fcap-3)",
-        "reach_combo": f"{round(audience_forecast['TIL_ET_And_TOI_RNF']['India']['user'],2)}\nUser Reach (Reach fcap-1)",
-        "impressions_combo": f"{round(min(audience_forecast['TIL_ET_And_TOI_RNF']['India']['user'] * 3, audience_forecast['TIL_ET_And_TOI_RNF']['India']['impr']),2)}\nTargetable Impressions (Impressions fcap-3)",
-        "reach_et": f'{round(audience_forecast["TIL_ET_Only_RNF"]["India"]["user"],2)}\nUser Reach (Reach fcap-1)',
-        "impressions_et": f'{round(min(audience_forecast["TIL_ET_Only_RNF"]["India"]["user"] * 3, audience_forecast["TIL_ET_Only_RNF"]["India"]["impr"]),2)}\nTargetable Impressions (Impressions fcap-3)',
-        "reach_nbt": f'{round(audience_forecast["TIL_NBT_Only_RNF"]["India"]["user"],2)}\nUser Reach (Reach fcap-1)',
-        "impressions_nbt": f'{round(min(audience_forecast["TIL_NBT_Only_RNF"]["India"]["user"] * 3, audience_forecast["TIL_NBT_Only_RNF"]["India"]["impr"]),2)}\nTargetable Impressions (Impressions fcap-3)'
+        "reach_cluster": f"{round(audience_forecast['TIL_All_Cluster_RNF']['India']['user'],2)}\nUser Reach",
+        "impressions_cluster": f"{round(min(audience_forecast['TIL_All_Cluster_RNF']['India']['user'] * 3, audience_forecast['TIL_All_Cluster_RNF']['India']['impr']),2)}\nTargetable Impressions",
+        "reach_languages": f"{round(audience_forecast['TIL_All_Languages_RNF']['India']['user'],2)}\nUser Reach",
+        "impressions_languages": f"{round(min(audience_forecast['TIL_All_Languages_RNF']['India']['user'] * 3, audience_forecast['TIL_All_Languages_RNF']['India']['impr']),2)}\nTargetable Impressions",
+        "reach_toi": f"{round(audience_forecast['TIL_TOI_Only_RNF']['India']['user'],2)}\nUser Reach",
+        "impressions_toi": f"{round(min(audience_forecast['TIL_TOI_Only_RNF']['India']['user'] * 3, audience_forecast['TIL_TOI_Only_RNF']['India']['impr']),2)}\nTargetable Impressions",
+        "reach_combo": f"{round(audience_forecast['TIL_ET_And_TOI_RNF']['India']['user'],2)}\nUser Reach",
+        "impressions_combo": f"{round(min(audience_forecast['TIL_ET_And_TOI_RNF']['India']['user'] * 3, audience_forecast['TIL_ET_And_TOI_RNF']['India']['impr']),2)}\nTargetable Impressions",
+        "reach_et": f'{round(audience_forecast["TIL_ET_Only_RNF"]["India"]["user"],2)}\nUser Reach',
+        "impressions_et": f'{round(min(audience_forecast["TIL_ET_Only_RNF"]["India"]["user"] * 3, audience_forecast["TIL_ET_Only_RNF"]["India"]["impr"]),2)}\nTargetable Impressions',
+        "reach_nbt": f'{round(audience_forecast["TIL_NBT_Only_RNF"]["India"]["user"],2)}\nUser Reach',
+        "impressions_nbt": f'{round(min(audience_forecast["TIL_NBT_Only_RNF"]["India"]["user"] * 3, audience_forecast["TIL_NBT_Only_RNF"]["India"]["impr"]),2)}\nTargetable Impressions'
     }
 
 def replace_table_cell_text(table_element, table_object_id, row_index, col_index, new_text):
