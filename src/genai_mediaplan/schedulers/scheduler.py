@@ -15,7 +15,6 @@ class ForecastDataScheduler:
     
     def __init__(self):
         self.scheduler = AsyncIOScheduler()
-        self._setup_jobs()
     
     def _setup_jobs(self):
         """Setup scheduled jobs"""
@@ -26,7 +25,8 @@ class ForecastDataScheduler:
             # CronTrigger(day_of_week='sat', hour=12, minute=30),  # Every Monday at 1:10 PM
             id='refresh_cohort_data',
             name='Refresh Cohort Data Weekly',
-            replace_existing=True
+            replace_existing=True,
+            max_instances=1
         )
         logger.info("Scheduled jobs configured")
     
@@ -73,6 +73,7 @@ class ForecastDataScheduler:
     def start(self):
         """Start the scheduler"""
         try:
+            self._setup_jobs()
             self.scheduler.start()
             logger.info("Scheduler started successfully")
         except Exception as e:
