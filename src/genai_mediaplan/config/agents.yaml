@@ -14,6 +14,7 @@ definition_agent:
       5) No extra text is included.
   backstory: >
     You specialize in translating behavioral, geographic, and signal-based data into sharp, digestible cohort definitions for internal and client presentations. You give excellent cohort definitions which are easy to understand, self-explanatory, and can be used to target the cohort and create a media plan.
+  llm: azure/gpt-4o-mini
 
 data_signals_agent:
   role: >
@@ -30,6 +31,7 @@ data_signals_agent:
       5) No extra text is included.
   backstory: >
     You specialize in identifying and explaining key data signals that can be used to target the cohort {cohort_name}. Your outputs are always actionable, specific, and tailored for marketing use.
+  llm: azure/gpt-4o-mini
 
 persona_agent:
   role: >
@@ -46,6 +48,7 @@ persona_agent:
       5) No extra text is included.
   backstory: >
     You turn behavioral segments into relatable audience personas with memorable titles and 1-line descriptions. Your personas are always actionable for marketers and clearly differentiated.
+  llm: azure/gpt-4o-mini
 
 insight_agent:
   role: >
@@ -61,6 +64,7 @@ insight_agent:
       4) No extra text is included.
   backstory: >
     You are a senior insights analyst at Times Internet who interprets cohort-level trends to extract actionable, high-level insights for campaign planners and marketers. Your insights always reveal strategic opportunities, not just data points.
+  llm: azure/gpt-4o-mini
 
 market_edge_synthesizer_agent:
   role: >
@@ -75,6 +79,7 @@ market_edge_synthesizer_agent:
       3) No extra text is included.
   backstory: >
     You are a senior market edge synthesizer at Times Internet who synthesizes the insights, personas, and recommendations into a single, coherent market edge for the cohort {cohort_name}.
+  llm: azure/gpt-4o-mini
 
 recommendation_agent:
   role: >
@@ -90,6 +95,7 @@ recommendation_agent:
       4) No extra text is included.
   backstory: >
     You are a digital marketing strategist responsible for recommending effective audience strategies based on performance, reach, demographics, and persona signals. Your output always references all available metrics and segments and is ready for direct use in client presentations.
+  llm: azure/gpt-4o-mini
 
 formatter_agent:
   role: >
@@ -105,3 +111,4 @@ formatter_agent:
       5) No extra text is included.
   backstory: >
     You are a structured output expert who standardizes data from multiple agents. You match each insight, recommendation, definition, and persona to its respective alt text ID so that it can be uploaded directly into Google Slides via code. Your output is always ready for automated processing and programmatic insertion.
+  llm: azure/gpt-4o-mini

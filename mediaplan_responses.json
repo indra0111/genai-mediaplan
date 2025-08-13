@@ -172,5 +172,40 @@
         "status": "success",
         "message": "Mediaplan generated successfully for Ecommerce",
         "google_slides_url": "https://docs.google.com/presentation/d/1s-RQbsG57iWoB5yYRxR2yDkycgXaG2fJC7PtSe2kRuc"
+    },
+    "Online Payment": {
+        "status": "success",
+        "message": "Mediaplan generated successfully for Online Payment",
+        "google_slides_url": "https://docs.google.com/presentation/d/1tI65M7fpj5LqmgJO9Gt5qy0BWVcBloaGrezzZCFueOU"
+    },
+    "Agriculture & Farming": {
+        "status": "success",
+        "message": "Mediaplan generated successfully for Agriculture & Farming",
+        "google_slides_url": "https://docs.google.com/presentation/d/1cjdO_CXb8KhpZ3aGtsx0NYkRYFnwgqfFBJ8eGE_gYCE"
+    },
+    "Social Media": {
+        "status": "success",
+        "message": "Mediaplan generated successfully for Social Media",
+        "google_slides_url": "https://docs.google.com/presentation/d/1Vsg_c0zihWCumIizuQdbTvfOdUknsgX2jmRuCkIPkzs"
+    },
+    "NRI's": {
+        "status": "success",
+        "message": "Mediaplan generated successfully for NRI's",
+        "google_slides_url": "https://docs.google.com/presentation/d/1JYEID9O1em3o_R6HkXCqQEISz9MfZ7uB1DZeCL_EtZs"
+    },
+    "Religion & Spirituality": {
+        "status": "success",
+        "message": "Mediaplan generated successfully for Religion & Spirituality",
+        "google_slides_url": "https://docs.google.com/presentation/d/1XegzpzTyooatpBIk8X1Xwcx3ze_IpGv-e1adJk2ZtvQ"
+    },
+    "Online Games": {
+        "status": "success",
+        "message": "Mediaplan generated successfully for Online Games",
+        "google_slides_url": "https://docs.google.com/presentation/d/1da1vF9yMYiLOSy6A5QE6kTKqp8ycGRpZjgZ6wwO8hhU"
+    },
+    "OTT": {
+        "status": "success",
+        "message": "Mediaplan generated successfully for OTT",
+        "google_slides_url": "https://docs.google.com/presentation/d/17btc3u6BfgoMrR9E6it1gg124Y-9uVsEDwxmdUmEtpg"
     }
 }
