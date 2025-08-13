@@ -21,7 +21,7 @@ class ForecastDataScheduler:
         # Add scheduled job for cohort data refresh
         self.scheduler.add_job(
             self._scheduled_refresh_cohort_data,
-            CronTrigger(day=1, hour=22, minute=0),
+            CronTrigger(day='1-7', day_of_week='sun', hour=22, minute=0),
             id='refresh_cohort_data',
             name='Refresh Cohort Data Weekly',
             replace_existing=True,
