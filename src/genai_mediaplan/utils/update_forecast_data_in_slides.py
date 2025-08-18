@@ -1,3 +1,5 @@
+from datetime import datetime
+import re
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from dotenv import load_dotenv
@@ -8,6 +10,7 @@ SERVICE_ACCOUNT_FILE = 'service_account.json'
 SCOPES = ['https://www.googleapis.com/auth/drive']
 credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 slides_service = build('slides', 'v1', credentials=credentials)
+drive_service = build("drive", "v3", credentials=credentials)
 
 def get_non_tabular_forecast_data(audience_forecast):
     return {
@@ -246,10 +249,25 @@ def get_update_requests_for_non_tabular_forecast_data(presentation_id, data):
 
     return requests
 
+def update_presentation_title(presentation_id):
+    file_metadata = drive_service.files().get(
+        fileId=presentation_id,
+        fields="name"
+    ).execute()
+    current_name = file_metadata["name"]
+    current_month_year = datetime.now().strftime("%B%Y")
+    new_name = re.sub(r"[A-Za-z]+[0-9]{4}$", current_month_year, current_name)
+    drive_service.files().update(
+        fileId=presentation_id,
+        body={"name": new_name}
+    ).execute()
+    return new_name
+
 def update_forecast_data_for_cohort(forecast_data, presentation_id):
     non_tabular_forecast_data = get_non_tabular_forecast_data(forecast_data)
     update_requests_based_on_alt_text = get_update_requests_for_non_tabular_forecast_data(presentation_id, non_tabular_forecast_data)
     update_requests_for_numerical_data = get_update_requests_for_numerical_data_in_slides(presentation_id, forecast_data)
     all_requests = update_requests_based_on_alt_text + update_requests_for_numerical_data
     slides_service.presentations().batchUpdate(presentationId=presentation_id, body={"requests": all_requests}).execute()
+    update_presentation_title(presentation_id)
     return all_requests

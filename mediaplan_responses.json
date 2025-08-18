@@ -207,5 +207,10 @@
         "status": "success",
         "message": "Mediaplan generated successfully for OTT",
         "google_slides_url": "https://docs.google.com/presentation/d/17btc3u6BfgoMrR9E6it1gg124Y-9uVsEDwxmdUmEtpg"
+    },
+    "EV Two Wheeler": {
+        "status": "success",
+        "message": "Mediaplan generated successfully for EV Two Wheeler",
+        "google_slides_url": "https://docs.google.com/presentation/d/1nvfx7qQe4waDDhZU8O58ZTpldsJ9IVMT6gNNdoDwSGg"
     }
 }
