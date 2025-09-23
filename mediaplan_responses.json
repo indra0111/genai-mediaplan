@@ -212,5 +212,10 @@
         "status": "success",
         "message": "Mediaplan generated successfully for EV Two Wheeler",
         "google_slides_url": "https://docs.google.com/presentation/d/1nvfx7qQe4waDDhZU8O58ZTpldsJ9IVMT6gNNdoDwSGg"
+    },
+    "EV Four Wheeler": {
+        "status": "success",
+        "message": "Mediaplan generated successfully for EV Four Wheeler",
+        "google_slides_url": "https://drive.google.com/file/d/1ZFWrBEQ5xxph_Uu0bQGt8RWXvZb2LgpYyWkXDFolHBo"
     }
 }
