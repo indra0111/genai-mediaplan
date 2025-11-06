@@ -49,21 +49,24 @@ class ForecastDataScheduler:
                 data = json.loads(f.read())
             logger.info(f"Starting to refresh all cohort data... Found {len(data)} cohorts")
             for cohort_name in data.keys():
+                retry=0
                 logger.info(f"Processing cohort: {cohort_name}")
-                try:
-                    presentation_id = data[cohort_name].get('google_slides_url', '').replace("https://docs.google.com/presentation/d/", "")
-                    if not presentation_id:
-                        logger.warning(f"No presentation ID found for cohort {cohort_name}, skipping")
-                        continue
-                    data_to_update = export_table_as_json(cohort_name)
-                    forecast_data = data_to_update['results']
-                    logger.info(f"Updating data for {cohort_name} with presentation ID {presentation_id}")
-                    logger.debug(f"Found {len(forecast_data.keys())} forecast data keys for {cohort_name}")
-                    update_forecast_data_for_cohort(forecast_data, presentation_id)
-                    logger.info(f"Successfully updated data for {cohort_name}")
-                except Exception as e:
-                    logger.error(f"Failed to update data for {cohort_name}: {str(e)}")
-                    continue
+                while retry < 3:
+                    try:
+                        presentation_id = data[cohort_name].get('google_slides_url', '').replace("https://docs.google.com/presentation/d/", "")
+                        if not presentation_id:
+                            logger.warning(f"No presentation ID found for cohort {cohort_name}, skipping")
+                            break
+                        data_to_update = export_table_as_json(cohort_name)
+                        forecast_data = data_to_update['results']
+                        logger.info(f"Updating data for {cohort_name} with presentation ID {presentation_id}")
+                        logger.debug(f"Found {len(forecast_data.keys())} forecast data keys for {cohort_name}")
+                        update_forecast_data_for_cohort(forecast_data, presentation_id)
+                        logger.info(f"Successfully updated data for {cohort_name}")
+                        break
+                    except Exception as e:
+                        retry += 1
+                        logger.error(f"Failed to update data for {cohort_name}: {str(e)}")
             logger.info("Successfully refreshed all cohort data.")
         
         except Exception as e:
