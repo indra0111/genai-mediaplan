@@ -3,31 +3,71 @@ import re
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 from dotenv import load_dotenv
+from genai_mediaplan.utils.helper import format_reach_impr
+import os
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 
 load_dotenv()
 
-SERVICE_ACCOUNT_FILE = 'service_account.json'
 SCOPES = ['https://www.googleapis.com/auth/drive']
-credentials = service_account.Credentials.from_service_account_file(SERVICE_ACCOUNT_FILE, scopes=SCOPES)
-slides_service = build('slides', 'v1', credentials=credentials)
-drive_service = build("drive", "v3", credentials=credentials)
+CLIENT_SECRET_FILE = 'client_secret_drive.json'
+TOKEN_FILE = 'token.json'
+
+creds = None
+if os.path.exists(TOKEN_FILE):
+    creds = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+if not creds or not creds.valid:
+    if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+    else:
+        flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRET_FILE, SCOPES)
+        creds = flow.run_local_server(port=0)
+    # Save token for future use
+    with open(TOKEN_FILE, 'w') as token:
+        token.write(creds.to_json())
+        
+drive_service = build('drive', 'v3', credentials=creds)
+slides_service = build('slides', 'v1', credentials=creds)
 
 def get_non_tabular_forecast_data(audience_forecast):
-    return {
+    data = {
         "cohort_updated_date": f"Audience Media Plan Forecast & Insights for {datetime.now().strftime('%B')} {datetime.now().strftime('%Y')}",
-        "reach_cluster": f"{round(audience_forecast['TIL_All_Cluster_RNF']['India']['user'],2)}\nUser Reach",
-        "impressions_cluster": f"{round(min(audience_forecast['TIL_All_Cluster_RNF']['India']['user'] * 3, audience_forecast['TIL_All_Cluster_RNF']['India']['impr']),2)}\nTargetable Impressions",
-        "reach_languages": f"{round(audience_forecast['TIL_All_Languages_RNF']['India']['user'],2)}\nUser Reach",
-        "impressions_languages": f"{round(min(audience_forecast['TIL_All_Languages_RNF']['India']['user'] * 3, audience_forecast['TIL_All_Languages_RNF']['India']['impr']),2)}\nTargetable Impressions",
-        "reach_toi": f"{round(audience_forecast['TIL_TOI_Only_RNF']['India']['user'],2)}\nUser Reach",
-        "impressions_toi": f"{round(min(audience_forecast['TIL_TOI_Only_RNF']['India']['user'] * 3, audience_forecast['TIL_TOI_Only_RNF']['India']['impr']),2)}\nTargetable Impressions",
-        "reach_combo": f"{round(audience_forecast['TIL_ET_And_TOI_RNF']['India']['user'],2)}\nUser Reach",
-        "impressions_combo": f"{round(min(audience_forecast['TIL_ET_And_TOI_RNF']['India']['user'] * 3, audience_forecast['TIL_ET_And_TOI_RNF']['India']['impr']),2)}\nTargetable Impressions",
-        "reach_et": f'{round(audience_forecast["TIL_ET_Only_RNF"]["India"]["user"],2)}\nUser Reach',
-        "impressions_et": f'{round(min(audience_forecast["TIL_ET_Only_RNF"]["India"]["user"] * 3, audience_forecast["TIL_ET_Only_RNF"]["India"]["impr"]),2)}\nTargetable Impressions',
-        "reach_nbt": f'{round(audience_forecast["TIL_NBT_Only_RNF"]["India"]["user"],2)}\nUser Reach',
-        "impressions_nbt": f'{round(min(audience_forecast["TIL_NBT_Only_RNF"]["India"]["user"] * 3, audience_forecast["TIL_NBT_Only_RNF"]["India"]["impr"]),2)}\nTargetable Impressions'
     }
+      
+    geo_map = {
+        "India": "india",
+        "United States": "usa",
+        "Canada": "canada",
+        "GCC": "gcc",
+        "Singapore": "singapore",
+        "United Arab Emirates": "uae",
+        "Saudi Arabia": "saudi_arabia",
+        "Malaysia": "malaysia",
+        "Indonesia": "indonesia",
+        "South Africa": "south_africa",
+        "Mauritius": "mauritius",
+        "Australia": "australia"
+    }
+    
+    preset_map = {
+        "TIL_All_Cluster_RNF": "cluster",
+        "TIL_All_Languages_RNF": "languages",
+        "TIL_TOI_Only_RNF": "toi",
+        "TIL_ET_Only_RNF": "et",
+        "TIL_ET_And_TOI_RNF": "combo",
+        "TIL_NBT_Only_RNF": "nbt",
+    }
+    
+    for country_key, country_label in geo_map.items():
+        for preset_key, preset_label in preset_map.items():
+            user = audience_forecast[preset_key][country_key]["user"]
+            impr = audience_forecast[preset_key][country_key]["impr"]
+            reach, impressions = format_reach_impr(user, impr)
+            data[f"{country_label}_reach_{preset_label}"] = reach
+            data[f"{country_label}_impressions_{preset_label}"] = impressions
+    return data
 
 def replace_table_cell_text(table_element, table_object_id, row_index, col_index, new_text):
 

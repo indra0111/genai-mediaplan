@@ -11,6 +11,7 @@ from google.auth.transport.requests import Request
 from genai_mediaplan.utils.update_charts import update_charts_in_slides
 from genai_mediaplan.utils.persona import update_persona_content
 from genai_mediaplan.utils.logger import get_logger
+from genai_mediaplan.utils.helper import format_reach_impr
 
 logger = get_logger(__name__)
 
@@ -86,21 +87,41 @@ def get_content_to_replace_in_slides(cohort_name, llm_response_json, audience_fo
         "cohort_updated_date": f"Audience Media Plan Forecast & Insights for {datetime.now().strftime('%B')} {datetime.now().strftime('%Y')}",
         "cohort_definition_title": f"{cohort_name} Cohort Definition",
         "cohort_definition": llm_response_json.get("cohort_definition", " "),
-        "reach_cluster": f"{round(audience_forecast['TIL_All_Cluster_RNF']['India']['user'],2)}\nUser Reach",
-        "impressions_cluster": f"{round(min(audience_forecast['TIL_All_Cluster_RNF']['India']['user'] * 3, audience_forecast['TIL_All_Cluster_RNF']['India']['impr']),2)}\nTargetable Impressions",
-        "reach_languages": f"{round(audience_forecast['TIL_All_Languages_RNF']['India']['user'],2)}\nUser Reach",
-        "impressions_languages": f"{round(min(audience_forecast['TIL_All_Languages_RNF']['India']['user'] * 3, audience_forecast['TIL_All_Languages_RNF']['India']['impr']),2)}\nTargetable Impressions",
-        "reach_toi": f"{round(audience_forecast['TIL_TOI_Only_RNF']['India']['user'],2)}\nUser Reach",
-        "impressions_toi": f"{round(min(audience_forecast['TIL_TOI_Only_RNF']['India']['user'] * 3, audience_forecast['TIL_TOI_Only_RNF']['India']['impr']),2)}\nTargetable Impressions",
-        "reach_combo": f"{round(audience_forecast['TIL_ET_And_TOI_RNF']['India']['user'],2)}\nUser Reach",
-        "impressions_combo": f"{round(min(audience_forecast['TIL_ET_And_TOI_RNF']['India']['user'] * 3, audience_forecast['TIL_ET_And_TOI_RNF']['India']['impr']),2)}\nTargetable Impressions",
-        "reach_et": f'{round(audience_forecast["TIL_ET_Only_RNF"]["India"]["user"],2)}\nUser Reach',
-        "impressions_et": f'{round(min(audience_forecast["TIL_ET_Only_RNF"]["India"]["user"] * 3, audience_forecast["TIL_ET_Only_RNF"]["India"]["impr"]),2)}\nTargetable Impressions',
-        "reach_nbt": f'{round(audience_forecast["TIL_NBT_Only_RNF"]["India"]["user"],2)}\nUser Reach',
-        "impressions_nbt": f'{round(min(audience_forecast["TIL_NBT_Only_RNF"]["India"]["user"] * 3, audience_forecast["TIL_NBT_Only_RNF"]["India"]["impr"]),2)}\nTargetable Impressions',
         "competitive_advantage": llm_response_json.get("market_edge", " "),
     }
     
+    geo_map = {
+        "India": "india",
+        "United States": "usa",
+        "Canada": "canada",
+        "GCC": "gcc",
+        "Singapore": "singapore",
+        "United Arab Emirates": "uae",
+        "Saudi Arabia": "saudi_arabia",
+        "Malaysia": "malaysia",
+        "Indonesia": "indonesia",
+        "South Africa": "south_africa",
+        "Mauritius": "mauritius",
+        "Australia": "australia"
+    }
+    
+    preset_map = {
+        "TIL_All_Cluster_RNF": "cluster",
+        "TIL_All_Languages_RNF": "languages",
+        "TIL_TOI_Only_RNF": "toi",
+        "TIL_ET_Only_RNF": "et",
+        "TIL_ET_And_TOI_RNF": "combo",
+        "TIL_NBT_Only_RNF": "nbt",
+    }
+    
+    for country_key, country_label in geo_map.items():
+        for preset_key, preset_label in preset_map.items():
+            user = audience_forecast[preset_key][country_key]["user"]
+            impr = audience_forecast[preset_key][country_key]["impr"]
+            reach, impressions = format_reach_impr(user, impr)
+            data[f"{country_label}_reach_{preset_label}"] = reach
+            data[f"{country_label}_impressions_{preset_label}"] = impressions
+        
     # Add data signals (3 titles, each with 5 signals)
     for i in range(3):
         title = safe_get_title(llm_response_json.get("data_signals", []), i)

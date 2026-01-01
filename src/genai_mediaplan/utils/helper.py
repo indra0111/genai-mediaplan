@@ -42,3 +42,9 @@ def find_object_id_by_alt_description(slides, alt_title):
             if title == alt_title:
                 return element['objectId']
     return None
+
+def format_reach_impr(user, impr):
+    return (
+        f"{round(user, 2)}M\nUser Reach",
+        f"{round(min(user * 3, impr), 2)}M\nTargetable Impressions"
+    )
